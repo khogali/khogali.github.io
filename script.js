@@ -1,4 +1,3 @@
-// Data structure for plans with initial pricing and updated line prices, including max line limits
 const plans = [
     {
         type: "Go5G Next",
@@ -108,54 +107,57 @@ const plans = [
     }
 ];
 
-function updateMaxLines() {
-    const planType = document.getElementById('plan-type').value;
-    const linesInput = document.getElementById('lines');
-    const selectedPlan = plans.find(plan => plan.type === planType);
-
-    if (selectedPlan) {
-        linesInput.max = selectedPlan.maxLines;
-    } else {
-        linesInput.max = 12;  // Default max for any plan that allows up to 12 lines
-    }
-}
-
 function calculateTotalPrice(plan, numLines) {
     let totalPrice = 0;
+    let lineCostDetails = [];
 
-    if (numLines >= 1) totalPrice += plan.firstLinePrice;
-    if (numLines >= 2) totalPrice += plan.secondLinePrice;
+    if (numLines >= 1) {
+        totalPrice += plan.firstLinePrice || 0;
+        lineCostDetails.push(`1st line: $${plan.firstLinePrice || 0}`);
+    }
+    if (numLines >= 2) {
+        totalPrice += plan.secondLinePrice || 0;
+        lineCostDetails.push(`2nd line: $${plan.secondLinePrice || 0}`);
+    }
     
-    if (plan.type.includes('55+')) {
+    if (plan.type === "Essentials") {
+        if (numLines >= 3 && numLines <= 6) {
+            totalPrice += (numLines - 2) * (plan.line3To6Price || 0);
+            lineCostDetails.push(`3rd to 6th lines: $${plan.line3To6Price || 0} each`);
+        }
+    } else if (plan.type.includes('55+')) {
         if (numLines >= 3 && numLines <= 4) {
-            totalPrice += (numLines - 2) * plan.line3To4Price;
+            totalPrice += (numLines - 2) * (plan.line3To4Price || 0);
+            lineCostDetails.push(`3rd to 4th lines: $${plan.line3To4Price || 0} each`);
         }
     } else if (plan.type.includes('Military') || plan.type.includes('First Responder')) {
         if (numLines >= 3 && numLines <= 6) {
-            totalPrice += (numLines - 2) * plan.line3To6Price;
+            totalPrice += (numLines - 2) * (plan.line3To6Price || 0);
+            lineCostDetails.push(`3rd to 6th lines: $${plan.line3To6Price || 0} each`);
         } else if (numLines >= 7 && numLines <= 8) {
-            totalPrice += 4 * plan.line3To6Price + (numLines - 6) * plan.line7To8Price;
+            totalPrice += 4 * (plan.line3To6Price || 0) + (numLines - 6) * (plan.line7To8Price || 0);
+            lineCostDetails.push(`7th to 8th lines: $${plan.line7To8Price || 0} each`);
         } else if (numLines >= 9 && numLines <= 12) {
-            totalPrice += 4 * plan.line3To6Price + 2 * plan.line7To8Price + (numLines - 8) * plan.line9To12Price;
+            totalPrice += 4 * (plan.line3To6Price || 0) + 2 * (plan.line7To8Price || 0) + (numLines - 8) * (plan.line9To12Price || 0);
+            lineCostDetails.push(`9th to 12th lines: $${plan.line9To12Price || 0} each`);
         }
     } else if (numLines >= 3 && numLines <= 8) {
-        totalPrice += (numLines - 2) * plan.line3To8Price;
+        totalPrice += (numLines - 2) * (plan.line3To8Price || 0);
+        lineCostDetails.push(`3rd to 8th lines: $${plan.line3To8Price || 0} each`);
     } else if (numLines >= 9 && numLines <= 12) {
-        totalPrice += 6 * plan.line3To8Price + (numLines - 8) * plan.line9To12Price;
-    } else if (numLines >= 3 && numLines <= 6) {
-        totalPrice += (numLines - 2) * plan.line3To6Price;
+        totalPrice += 6 * (plan.line3To8Price || 0) + (numLines - 8) * (plan.line9To12Price || 0);
+        lineCostDetails.push(`9th to 12th lines: $${plan.line9To12Price || 0} each`);
     }
 
-    return totalPrice;
+    return { totalPrice, lineCostDetails };
 }
 
 function filterPlans() {
     const planType = document.getElementById('plan-type').value;
     let numLines = parseInt(document.getElementById('lines').value);
-    const useInsiderCode = document.getElementById('insider-code').checked;
+    const applyAutoPay = document.getElementById('apply-autopay').checked;
     const insuranceLines = parseInt(document.getElementById('insurance-lines').value);
     const addTaxes = document.getElementById('add-taxes').checked;
-    const applyAutoPay = document.getElementById('apply-autopay').checked;
     const planList = document.getElementById('plan-list');
 
     planList.innerHTML = ''; // Clear previous results
@@ -170,12 +172,9 @@ function filterPlans() {
     }
 
     filteredPlans.forEach(plan => {
-        let basePrice = calculateTotalPrice(plan, numLines);
+        const { totalPrice, lineCostDetails } = calculateTotalPrice(plan, numLines);
 
-        // Apply 20% discount if the Insider Code is used (on base price only)
-        if (useInsiderCode) {
-            basePrice *= 0.8;
-        }
+        let basePrice = totalPrice;
 
         // Apply AutoPay Discount (first 4 lines) if selected
         if (applyAutoPay) {
@@ -187,17 +186,21 @@ function filterPlans() {
         const insuranceCost = 18 * insuranceLines;
 
         // Final total price before taxes
-        let totalPrice = basePrice + insuranceCost;
+        let finalPrice = basePrice + insuranceCost;
 
         // Apply 8% tax if the plan is Essentials and taxes are selected
         if (plan.type === "Essentials" && addTaxes) {
-            totalPrice *= 1.08;
+            finalPrice *= 1.08;
         }
 
         planList.innerHTML += `
             <div class="plan-card">
                 <h2>${plan.type}</h2>
-                <p><strong>Price for ${numLines} line(s) with ${insuranceLines} insurance line(s): $${totalPrice.toFixed(2)}/mo</strong></p>
+                <p><strong>Total Price for ${numLines} line(s): $${finalPrice.toFixed(2)}/mo</strong></p>
+                <p>Cost Breakdown:</p>
+                <ul>
+                    ${lineCostDetails.map(detail => `<li>${detail}</li>`).join('')}
+                </ul>
             </div>
         `;
     });
