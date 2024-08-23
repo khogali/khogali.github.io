@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+      <button class="home-button" onclick="window.location.href='index.html'">Home</button>
+        <h1>Mobile Plan Calculator</h1>
+        <div class="controls">
+            <label for="plan-type">Select Plan:</label>
+            <select id="plan-type">
+                <option value="all">All Plans</option>
+                <option value="Go5G Next">Go5G Next</option>
+                <option value="Go5G Plus">Go5G Plus</option>
+                <option value="Go5G">Go5G</option>
+                <option value="Essentials">Essentials</option>
+                <option value="Go5G Next 55+">Go5G Next 55+</option>
+                <option value="Go5G Plus 55+">Go5G Plus 55+</option>
+                <option value="Go5G 55+">Go5G 55+</option>
+                <option value="Go5G Next Military">Go5G Next Military</option>
+                <option value="Go5G Plus Military">Go5G Plus Military</option>
+                <option value="Go5G Military">Go5G Military</option>
+                <option value="Go5G Next First Responder">Go5G Next First Responder</option>
+                <option value="Go5G Plus First Responder">Go5G Plus First Responder</option>
+                <option value="Go5G First Responder">Go5G First Responder</option>
+            </select>
+
+            <label for="lines">Number of Lines:</label>
+            <input type="number" id="lines" min="1" max="12" value="1">
+
+            <label for="insurance-lines">Insurance Lines:</label>
+            <input type="number" id="insurance-lines" min="0" max="12" value="0">
+
+            <div class="checkbox-wrapper-51">
+                <input type="checkbox" id="apply-autopay" />
+                <label for="apply-autopay" class="toggle">
+                  <span>
+                    <svg width="10px" height="10px" viewBox="0 0 10 10">
+                      <path d="M5,1 L5,1 C2.790861,1 1,2.790861 1,5 L1,5 C1,7.209139 2.790861,9 5,9 L5,9 C7.209139,9 9,7.209139 9,5 L9,5 C9,2.790861 7.209139,1 5,1 L5,9 L5,1 Z"></path>
+                    </svg>
+                  </span>
+                </label>
+                <label for="apply-autopay">AutoPay</label>
+              </div>
+              
+              <div class="checkbox-wrapper-51">
+                <input type="checkbox" id="insider-code" />
+                <label for="insider-code" class="toggle">
+                  <span>
+                    <svg width="10px" height="10px" viewBox="0 0 10 10">
+                      <path d="M5,1 L5,1 C2.790861,1 1,2.790861 1,5 L1,5 C1,7.209139 2.790861,9 5,9 L5,9 C7.209139,9 9,7.209139 9,5 L9,5 C9,2.790861 7.209139,1 5,1 L5,9 L5,1 Z"></path>
+                    </svg>
+                  </span>
+                </label>
+                <label for="insider-code">Insider Code</label>
+              </div>
+              
+              <div class="checkbox-wrapper-51">
+                <input type="checkbox" id="add-taxes" />
+                <label for="add-taxes" class="toggle">
+                  <span>
+                    <svg width="10px" height="10px" viewBox="0 0 10 10">
+                      <path d="M5,1 L5,1 C2.790861,1 1,2.790861 1,5 L1,5 C1,7.209139 2.790861,9 5,9 L5,9 C7.209139,9 9,7.209139 9,5 L9,5 C9,2.790861 7.209139,1 5,1 L5,9 L5,1 Z"></path>
+                    </svg>
+                  </span>
+                </label>
+                <label for="add-taxes">Taxes for Essentials</label>
+              </div>
+              
+
+            <button onclick="filterPlans()">Calculate</button>
+        </div>
+
+        <div id="plan-list" class="plan-list"></div>
+    </div>
+</body>
+</html>
