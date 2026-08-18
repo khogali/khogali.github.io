@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Landing Page</title>
+<meta name="robots" content="noindex,nofollow">
+<!-- Everything inline. Zero external requests = sub-0.5s render on cold mobile. -->
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#111;background:#fff}
+.wrap{max-width:640px;margin:0 auto;padding:24px 20px 64px}
+h1{font-size:29px;line-height:1.25;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+h2{font-size:20px;font-weight:700;margin:28px 0 10px}
+p{margin-bottom:16px;font-size:17px}
+.kicker{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#b45309;background:#fef3c7;padding:5px 10px;border-radius:4px;margin-bottom:16px}
+.cta{display:block;width:100%;text-align:center;background:#16a34a;color:#fff;font-size:19px;font-weight:700;padding:17px 24px;border-radius:10px;text-decoration:none;margin:26px 0 10px;box-shadow:0 2px 0 #15803d}
+.cta:active{transform:translateY(1px);box-shadow:none}
+.sub{text-align:center;font-size:13px;color:#666;margin-bottom:26px}
+.proof{border-left:3px solid #16a34a;padding:12px 16px;background:#f0fdf4;margin:20px 0;font-size:16px}
+ul{margin:0 0 18px 22px}li{margin-bottom:9px;font-size:17px}
+footer{border-top:1px solid #e5e5e5;margin-top:40px;padding-top:18px;font-size:12px;color:#888}
+footer a{color:#888}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="kicker" data-v="kicker">Kicker text</span>
+  <h1 data-v="headline">Headline goes here — the single biggest lever on this page.</h1>
+
+  <p data-v="lede">Opening paragraph. On paid traffic this either earns the next
+  scroll or loses the click you just paid for.</p>
+
+  <div class="proof" data-v="proof">Proof element — specific, concrete, checkable.</div>
+
+  <h2 data-v="h2">Sub-headline</h2>
+  <ul data-v="bullets">
+    <li>Benefit one</li>
+    <li>Benefit two</li>
+    <li>Benefit three</li>
+  </ul>
+
+  <a class="cta" id="cta" href="/api/go" data-v="cta">Continue →</a>
+  <div class="sub" data-v="ctasub">Takes about 60 seconds</div>
+
+  <footer>
+    <p>Advertising disclosure: we may be compensated if you take action through
+    links on this page.</p>
+    <p><a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a></p>
+  </footer>
+</div>
+
+<script>
+// Carry click_id through to the outbound link so the network can post it back.
+(function(){
+  var p = new URLSearchParams(location.search);
+  var cid = p.get('cid') || (document.cookie.match(/(?:^|;\s*)cid=([^;]+)/)||[])[1] || '';
+  var cta = document.getElementById('cta');
+  if (cid) cta.href = '/api/go?cid=' + encodeURIComponent(cid);
+
+  // Variant copy swap. VARIANTS is emitted at build time per landing page.
+  var v = p.get('v');
+  if (v && window.VARIANTS && window.VARIANTS[v]) {
+    var copy = window.VARIANTS[v];
+    document.querySelectorAll('[data-v]').forEach(function(el){
+      var k = el.getAttribute('data-v');
+      if (copy[k]) el.innerHTML = copy[k];
+    });
+  }
+})();
+</script>
+</body>
+</html>
