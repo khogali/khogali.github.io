@@ -117,9 +117,9 @@ scalar subqueries, so it is the likelier half to need a fix on first run.
 | Vercel project | `adstack` / `prj_FUpbBCIwOx843OtZbPkuaU9jp2Qo` / branch `adstack-main` / root `template` |
 | Live URL | `https://adstack-three.vercel.app` — `/lp/default` returns **200** |
 | Burner domain | **`thecravingsnote.com`** — bought, attached to Production, apex only (www redirect deliberately OFF) |
-| Offer | **Purisaki Berberine Patches** (confirmed 2026-09-01) |
+| Offer | **Purisaki Berberine Patches**, lander `cbpage=lp1`, on Meta (decided 2026-09-01) |
 | ClickBank | nickname **`shilkawia`** (new, hops cleanly). `ashilkawi` and `a7medkhoga` are dead — `accntstate`. Vendor `otppurisak` |
-| **OPEN** | **Hoplink lands on the wrong product (`/nuubu/`, not Purisaki). Email the vendor. See below.** |
+| Hoplink | `b4802imbtdqkj90h8ixt32-vno` + `?cbpage=lp1` — verified correct product, `aff_sub1` and `fbclid` both survive |
 
 **The SQL is no longer unverified.** Seeded synthetic data and every verdict was
 correct: `ad-cut` 200 clicks/$300/0 conv -> CUT; `ad-scale` 150/$200/5 conv ->
@@ -207,7 +207,20 @@ Regenerate from Marketplace -> Get Affiliate Link if the encrypted id rotates.
 `aff sub 1`..`5`, `tid`, `fbclid` and `extclid` are all togglable under
 Edit Parameters.
 
-## DECISION NEEDED: every Purisaki destination violates Meta policy
+## DECIDED 2026-09-01: keep Purisaki, run on Meta
+
+Ahmed was shown all three destination pages and their claims, and chose to
+proceed. **This is a made decision, not an oversight. Do not re-litigate it** —
+same rule as paid-vs-organic. Critique execution, not the choice.
+
+Practical consequences to manage rather than argue:
+- The one surface he controls is `thecravingsnote.com`. Keep his own copy free
+  of numeric weight-loss claims, before/after framing and the Harvard angle.
+  It is the defensible surface and the only one he can edit.
+- Expect ad-level rejections. Budget for creative iteration, not just spend.
+- Do not spend the whole budget from one ad account.
+
+## (context for that decision) every Purisaki destination breaches Meta policy
 
 Read all three destination pages. Every path carries hard weight-loss claims
 and fake-news framing:

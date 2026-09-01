@@ -36,10 +36,27 @@ export function resolveOffer(host: string | undefined, env: NodeJS.ProcessEnv = 
   return null;
 }
 
-/** Put the click_id where the network expects it. */
-export function offerUrlWithSubId(url: string, clickId: string): string {
+/**
+ * Put the click_id where the network expects it, and append any extra params.
+ *
+ * `extra` exists for fbclid. ClickBank's own Meta Conversions API integration
+ * reads the Facebook click id off the hop, so it has to travel outbound with
+ * the visitor. Without it ClickBank fires a Purchase that Meta cannot attribute,
+ * and the optimiser learns nothing — silently, which is the expensive kind.
+ */
+export function offerUrlWithSubId(
+  url: string,
+  clickId: string,
+  extra: Record<string, string | null | undefined> = {},
+): string {
   const id = encodeURIComponent(clickId);
-  return url.includes('{subid}')
+  let out = url.includes('{subid}')
     ? url.replace(/\{subid\}/g, id)
     : `${url}${url.includes('?') ? '&' : '?'}subid=${id}`;
+
+  for (const [k, v] of Object.entries(extra)) {
+    if (!v) continue;
+    out += `${out.includes('?') ? '&' : '?'}${encodeURIComponent(k)}=${encodeURIComponent(v)}`;
+  }
+  return out;
 }

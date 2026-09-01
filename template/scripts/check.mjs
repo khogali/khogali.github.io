@@ -105,5 +105,18 @@ assert.equal(offerUrlWithSubId('https://h/o?a=1', cid),           `https://h/o?a
 assert.equal(offerUrlWithSubId('https://h/o', cid),               `https://h/o?subid=${cid}`);
 assert.ok(!offerUrlWithSubId('https://h/o', 'a b&c=1').includes(' '), 'sub-ID must be url-encoded');
 
+// fbclid must ride along to the offer, or ClickBank's Meta CAPI fires a
+// Purchase that Meta cannot attribute — silently.
+const cb = 'https://x.hop.clickbank.net/?cbpage=lp1&aff_sub1={subid}';
+const withFb = offerUrlWithSubId(cb, cid, { fbclid: 'ABC123', traffic_source: 'meta' });
+assert.ok(withFb.includes(`aff_sub1=${cid}`), 'sub-ID must land in aff_sub1');
+assert.ok(withFb.includes('cbpage=lp1'), 'lander selector must survive');
+assert.ok(withFb.includes('fbclid=ABC123'), 'fbclid must be forwarded');
+assert.ok(withFb.includes('traffic_source=meta'));
+// Absent/empty extras must not emit dangling params.
+const noFb = offerUrlWithSubId(cb, cid, { fbclid: null, ttclid: undefined });
+assert.ok(!noFb.includes('fbclid'), 'null extras must be skipped');
+assert.ok(!noFb.endsWith('&') && !noFb.includes('=&'), 'no dangling params');
+
 console.log(`ok — ${keys.length} data-v slots, variant b overrides ${bKeys.join(', ')}, ` +
             `${seeded.size} config keys wired, offer resolver green`);
