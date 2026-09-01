@@ -116,7 +116,7 @@ scalar subqueries, so it is the likelier half to need a fix on first run.
 | Vercel team | `team_b2Q2wZtXXXRROzcSJWoKtJcF`, plan **pro** (upgraded 2026-09-01) |
 | Vercel project | `adstack` / `prj_FUpbBCIwOx843OtZbPkuaU9jp2Qo` / branch `adstack-main` / root `template` |
 | Live URL | `https://adstack-three.vercel.app` — `/lp/default` returns **200** |
-| Burner domain | Not bought |
+| Burner domain | **`thecravingsnote.com`** — bought, attached to Production, apex only (www redirect deliberately OFF) |
 | Offer | **Purisaki Berberine Patches** (confirmed 2026-09-01) |
 
 **The SQL is no longer unverified.** Seeded synthetic data and every verdict was
@@ -155,7 +155,25 @@ Four env vars remain, which Claude will not set because they are secrets:
 `SUPABASE_URL` = `https://xiodpbhapjitjqtuavwy.supabase.co`, plus
 `SUPABASE_SERVICE_KEY`, `POSTBACK_SECRET` (`openssl rand -hex 24`), and `OFFERS`.
 
-**Domain is NOT free.** Pro perk unclaimed (domains dashboard empty) but the
+**`thecravingsnote.com` is live on the project.** Apex only — the "Redirect apex
+domains to www" checkbox is ON by default and was deliberately unchecked, because
+a www redirect adds a hop on paid traffic and breaks the `fb.1.` subdomain index
+in `lib/capi.ts` if that path is ever re-enabled.
+
+**Purisaki hoplink shape, confirmed from ClickBank's own dialog:**
+
+```
+https://<AFFILIATE_NICKNAME>.otppurisak.hop.clickbank.net/
+```
+
+Vendor nickname is `otppurisak`. The affiliate nickname is Ahmed's ClickBank
+account name — Claude does not have it. Once known, `OFFERS` is:
+
+```json
+{"thecravingsnote.com":{"name":"purisaki","url":"https://NICKNAME.otppurisak.hop.clickbank.net/?aff_sub1={subid}&traffic_source=meta&traffic_type=paid"}}
+```
+
+**Historical note on the domain purchase:** Pro perk unclaimed (domains dashboard empty) but the
 `Free with Pro` filter still prices `thecravingsnote.com` at $11.25 with no $0
 anywhere. Either .com is ineligible or the discount only applies in the cart.
 Registration needs a full WHOIS record (legal name, phone, street address), so

@@ -110,7 +110,7 @@ from the link.
 `OFFER_URL` in the environment:
 
 ```
-https://HOPLINK_OR_DIRECT_TRACKING_LINK?aff_sub1={subid}&traffic_source=meta&traffic_type=paid
+https://CBNICKNAME.VENDORNICKNAME.hop.clickbank.net/?aff_sub1={subid}&traffic_source=meta&traffic_type=paid
 ```
 
 `{subid}` is substituted with the click_id by `/api/go`. Without the placeholder
