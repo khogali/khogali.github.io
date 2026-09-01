@@ -114,7 +114,8 @@ scalar subqueries, so it is the likelier half to need a fix on first run.
 | Supabase project | `adstack` / ref `xiodpbhapjitjqtuavwy` / us-east-1 / PG 17 / free, $0/mo |
 | Schema | **Applied and verified.** 35 statements, migration `adstack_initial_schema` |
 | Vercel team | `team_b2Q2wZtXXXRROzcSJWoKtJcF`, plan **pro** (upgraded 2026-09-01) |
-| Vercel project | **NOT created.** MCP returns 403 on project creation, see below |
+| Vercel project | `adstack` / `prj_FUpbBCIwOx843OtZbPkuaU9jp2Qo` / branch `adstack-main` / root `template` |
+| Live URL | `https://adstack-three.vercel.app` — `/lp/default` returns **200** |
 | Burner domain | Not bought |
 | Offer | **Purisaki Berberine Patches** (confirmed 2026-09-01) |
 
@@ -134,17 +135,32 @@ landing-page check underneath it. Now counts only genuine failures.
 Supabase security advisors: only INFO `rls_enabled_no_policy` on all five
 tables, which is the intended design. No errors, no warnings.
 
-**Vercel project creation is blocked on a permission, not the plan.** The team
-reads `pro`, but the MCP connection 403s on create (read and list work fine).
-It is an OAuth scope limit. Create it by hand with exactly these three settings:
+**Vercel is deployed.** The MCP 403s on project creation (OAuth scope limit —
+read and list work), so it was created through the browser instead. Production
+branch `adstack-main`, root directory `template`, both saved. Vercel's own
+"Redeploy" toast does not actually fire; push a commit to `adstack-main` instead.
 
-- Repo `khogali/khogali.github.io`
-- **Production branch `adstack-main`** (NOT the repo default, which is the
-  GitHub Pages site)
-- **Root directory `template`**
+**The audit's headline fix is verified on a real host.** `/lp/default` returns
+**200** and carries `x-robots-tag: noindex, nofollow`, which also proves the root
+directory is correct since that header comes from `template/vercel.json`. Before
+the audit this URL was `/default` and would have 404'd every paid click.
 
-Then four env vars, which Claude will not set because they are secrets:
-`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `POSTBACK_SECRET`, `OFFERS`.
+`/api/c` and `/api/pb` currently return **500**, which is expected: `lib/db.ts`
+calls `createClient` at module scope with `SUPABASE_URL!`, so it throws before
+any handler runs. Note this masks the deliberate 503 from the `POSTBACK_SECRET`
+fail-closed check — the refusal still happens, just with the wrong status and no
+diagnostic. Not worth fixing before env vars exist.
+
+Four env vars remain, which Claude will not set because they are secrets:
+`SUPABASE_URL` = `https://xiodpbhapjitjqtuavwy.supabase.co`, plus
+`SUPABASE_SERVICE_KEY`, `POSTBACK_SECRET` (`openssl rand -hex 24`), and `OFFERS`.
+
+**Domain is NOT free.** Pro perk unclaimed (domains dashboard empty) but the
+`Free with Pro` filter still prices `thecravingsnote.com` at $11.25 with no $0
+anywhere. Either .com is ineligible or the discount only applies in the cart.
+Registration needs a full WHOIS record (legal name, phone, street address), so
+Ahmed buys it in the cart himself. Terms: non-refundable, auto-renew ON at the
+then-current price, charged to the card on file, tax added at charge time.
 
 ## config is set to Purisaki, live
 
