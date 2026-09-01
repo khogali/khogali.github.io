@@ -232,10 +232,23 @@ Ad account contact email is `selectionneshop@gmail.com`; Ahmed is admin on both.
 The new ad account has no campaigns, so the wrong-objective draft that lived in
 `124463681691678` is not carried over.
 
-**UNVERIFIED: ad account currency and time zone.** Meta's UI would not surface
-them across several attempts. They must be **USD** and **UTC**, and neither can
-be changed after the account has spent. Confirm before the first dollar:
-Ads Manager -> Billing & payments, or the account creation confirmation.
+**VERIFIED 2026-09-01: currency USD, time zone Pacific.**
+- Currency **US Dollars USD**, read at Billing & payments -> account details.
+  Country United States of America. This is the one that had to be right.
+- Time zone is **Pacific Time**, not UTC. Read from the Ads Manager date-range
+  picker footer ("Dates are shown in Pacific Time"), which is the only place
+  Meta's current UI surfaces it.
+
+Pacific is fine and was NOT worth fighting. Meta locks the timezone after first
+spend, so adstack was changed to follow the ad account instead: `report_tz()`
+in `schema.sql` returns `America/Los_Angeles`, and `ad_performance` buckets
+clicks and conversions with `date(ts at time zone report_tz())`. Meta owns the
+spend numbers, so Meta owns the day boundary.
+
+**If you ever point this template at a non-Pacific ad account, change
+`report_tz()` to match it.** That is the single knob; nothing else hardcodes a
+zone. Verified live: a 2026-08-31 01:00 UTC click now buckets to 2026-08-30,
+which is the day Meta bills it.
 
 ## SETUP SPEC for the new assets (as built)
 
@@ -252,8 +265,8 @@ holds the verified domain.
 - Currency: **USD — non-negotiable.** ClickBank pays USD and `ad_performance`
   computes `profit` as a raw `revenue - spend` with no FX anywhere. A non-USD
   account silently produces wrong profit, ROI and CPA that still look plausible.
-- Time zone: **UTC.** The views bucket days with `date()` in UTC; matching
-  removes the one-day boundary drift documented on `ad_performance`.
+- Time zone: match it to `report_tz()` in `schema.sql`, or change `report_tz()`
+  to match the account. The live account is Pacific and the code follows it.
 - Do NOT reuse `124463681691678`. It is personal, unbilled, and Meta refuses to
   claim it. It also holds a draft **Traffic** campaign that should not be used.
 
@@ -735,17 +748,34 @@ Ahmed's secrets, his legal agreement, or his money. In dependency order:
 
 | # | Step | Where | Why it blocks |
 |---|---|---|---|
-| 1 | Tick Commercial Terms, click **Add ad account** | Meta -> Kho's Recs -> Ad accounts (staged) | Ad account must be in the portfolio that owns the verified domain |
-| 2 | Create a **Dataset** | Meta -> Data Sources -> Datasets | ClickBank CAPI needs a Pixel/Dataset ID |
-| 3 | Generate a CAPI **access token** | Meta, on that dataset | Credential. Ahmed only |
-| 4 | Paste Pixel ID + token into ClickBank | ClickBank -> Integrations -> Meta | Turns on server-side Purchase events |
-| 5a | ~~`SUPABASE_URL` + `OFFERS`~~ | **DONE** 2026-09-01, set as Config type, Production | — |
-| 5b | `SUPABASE_SERVICE_KEY` | Vercel, type **Secret** | Service-role key, bypasses RLS. Ahmed only |
-| 5c | `POSTBACK_SECRET` | Vercel Secret + the same value in ClickBank | `openssl rand -hex 24`. Never paste it into a chat |
-| 6 | ~~Build the ClickBank postback~~ | **DONE** 2026-09-01, saved as `adstack`, status **Inactive** | Needs the secret appended, then activate |
-| 7 | **Rotate the ClickBank API key** | ClickBank -> API Management | Pasted into chat; currently has Orders Read/Write + Subscription Modification |
-| 8 | Run the smoke test | `template/README.md` | Proves the exact link the audit found broken |
-| 9 | Change the draft campaign to **Sales**, optimising on `Purchase` | Meta Ads Manager | Traffic optimises for clicks, the failure mode this stack exists to fix |
+| 1-6 | ~~Portfolio, Page, ad account, dataset, CAPI token, env vars, postback~~ | **ALL DONE** 2026-09-01 | — |
+| 7 | **Rotate the ClickBank API key** | ClickBank -> Settings -> API Management | Pasted into chat; currently Active with Orders Read/Write + Subscription Modification |
+| 8 | **Add a payment method** | Meta -> Billing & payments | Financial credential. **Ahmed only.** Account shows "You haven't added any payment methods"; Ads Manager blocks publishing until one exists |
+| 9 | Create the first campaign | Meta Ads Manager | **Sales** objective optimising on `Purchase`. Never Traffic — Traffic optimises for clicks, the failure mode this stack exists to fix |
+
+Steps 7 and 8 are the only things standing between here and a live ad, and both
+are Ahmed-only by rule: one is a credential rotation, the other is card details.
+
+### Verified live 2026-09-01
+
+Both ClickBank integrations are **Active**. The postback path was proved end to
+end with ClickBank's own **Test** action instead of a hand-built curl, so the
+secret never had to be handled at all:
+
+- `Initial Purchase` and `Upsell Purchase` both reported *"Test event delivered."*
+- A `conversions` row landed in Supabase. That is the real proof: it means the
+  `k=` value in ClickBank **matches** `POSTBACK_SECRET` in Vercel, because a
+  mismatch returns 403 and writes nothing.
+- The row had `sub_id='affsub1'` (ClickBank's fake macro data) with
+  `click_id=null`. **This is the audit fix working.** Before it, an unresolvable
+  sub-ID killed the whole insert and the conversion vanished silently. Now the
+  row survives with the sub-ID recorded for later reconciliation.
+- Two test events produced **one** row — both carried the same fake
+  `txn=ABC12345`, so the dedupe index collapsed them. That is the
+  `OK` / `OK duplicate` behaviour demonstrated rather than assumed.
+- `adstack_status.plumbing` correctly raised *"1 postback(s) matched no click.
+  Check the sub-ID macro."* The test row was deleted afterwards and it returned
+  to `ok` with `conversions` back to 0.
 
 Values needed for step 5:
 
@@ -761,12 +791,12 @@ Postback URL for step 6:
 https://thecravingsnote.com/api/pb?subid={aff_sub1}&payout={affiliate_earnings}&txn={receipt_id}&k=YOUR_SECRET
 ```
 
-## ClickBank Meta CAPI integration — staged, NOT saved
+## ClickBank Meta CAPI integration — SAVED and ACTIVE
 
-Integrations -> Postback/Pixels -> Add Integration -> **Facebook Pixel**.
-ClickBank refuses to save without the access token (*"Access token is
-required"*), so unlike the postback this one could not be persisted half-done.
-Re-enter if the page was lost:
+Integrations -> Postback/Pixels -> `adstack meta capi`. Ahmed pasted the access
+token on 2026-09-01 and it saved; Claude then activated it. ClickBank refuses to
+save without the token (*"Access token is required"*), so if this ever needs
+rebuilding, the token has to go in before Save:
 
 | Field | Value |
 |---|---|
@@ -774,7 +804,7 @@ Re-enter if the page was lost:
 | Account | `shilkawia` |
 | Role Type | Affiliate |
 | Pixel ID | `1842250187139415` |
-| Access Token | **Ahmed only** — Events Manager -> dataset -> Set up Conversions API |
+| Access Token | **Set 2026-09-01 by Ahmed.** Never recorded here. Events Manager -> dataset -> Set up Conversions API |
 | Event Source URL | `https://thecravingsnote.com` |
 | Integration Level | Global |
 | Event Types | **Initial Order Form Impression, Initial Purchase** |
@@ -793,7 +823,7 @@ matters:**
   `InitiateCheckout`) purely as upper-funnel signal for Meta. It is excluded
   from the postback, where it would write phantom $0 conversion rows.
 
-## ClickBank postback integration — built, inactive
+## ClickBank postback integration — ACTIVE
 
 Integrations -> Postback/Pixels -> `adstack`. Configured:
 
@@ -804,15 +834,18 @@ Integrations -> Postback/Pixels -> `adstack`. Configured:
 | Tracking Type | S2S Postback |
 | Integration Level | Global (all offers) |
 | Event Types | **Initial Purchase, Upsell Purchase** |
-| Status | **Inactive** — activate after appending the secret |
+| Status | **Active** since 2026-09-01 |
 
-URL as saved, deliberately ending in a bare `k=`:
+URL as saved. The `k=` value holds the real `POSTBACK_SECRET` and is redacted
+here on purpose — read it off the ClickBank form if you ever need it, never from
+this file:
 
 ```
-https://thecravingsnote.com/api/pb?subid={aff_sub1}&payout={affiliate_earnings}&txn={receipt_id}&network=clickbank&offer={vendor}&k=
+https://thecravingsnote.com/api/pb?subid={aff_sub1}&payout={affiliate_earnings}&txn={receipt_id}&network=clickbank&offer={vendor}&k=<POSTBACK_SECRET>
 ```
 
-Ahmed appends his `POSTBACK_SECRET` after `k=` and flips Status to Active.
+Confirmed to match the Vercel env var by the ClickBank Test on 2026-09-01: a
+conversion row was written, which only happens when the secret compares equal.
 
 **Decisions baked into that config, with reasons:**
 
