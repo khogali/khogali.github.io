@@ -220,7 +220,13 @@ prize is a Page named after a French store that does not match the funnel.
 | Domain | `thecravingsnote.com` | `2470795726763483` — **Verified** |
 | Page | The Cravings Note | `1203534016185819` |
 | Ad account | The Cravings Note | `3975035259299444` |
-| Dataset | — | **not yet created** |
+| Dataset (Pixel) | The Cravings Note | `1842250187139415` |
+
+Dataset created with **"Add the Conversions API for web events" checked** and
+**categories deliberately left blank** — Meta warns that picking a category can
+cause data sharing to be "limited or blocked", and tagging a weight-loss funnel
+with a health category is a plausible way to have your own Purchase events
+throttled. Set one later only if Meta asks.
 
 Ad account contact email is `selectionneshop@gmail.com`; Ahmed is admin on both.
 The new ad account has no campaigns, so the wrong-objective draft that lived in
