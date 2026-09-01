@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
-import { db } from '../lib/db';
+import { db, missingConfig } from '../lib/db';
 import { sendConversion } from '../lib/capi';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -31,6 +31,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Fail closed. An unset secret used to mean "skip the check", which turned a
   // forgotten env var into an open endpoint: anyone could forge conversions and
   // train Meta to buy their traffic with your budget.
+  const configError = missingConfig();
+  if (configError) {
+    console.error(configError);
+    return res.status(503).send('not configured');
+  }
+
   const secret = process.env.POSTBACK_SECRET;
   if (!secret) {
     console.error('POSTBACK_SECRET is not set — refusing postbacks');
@@ -52,7 +58,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     | null = null;
 
   if (UUID.test(subId)) {
-    const { data } = await db
+    const { data } = await db()
       .from('clicks')
       .select('click_id, fbclid, ts, ip, user_agent')
       .eq('click_id', subId)
@@ -63,7 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { k: _secret, ...rawSafe } = q;   // never persist the shared secret
 
-  const { data: conv, error } = await db
+  const { data: conv, error } = await db()
     .from('conversions')
     .insert({
       click_id:       click?.click_id ?? null,
@@ -95,7 +101,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         currency,
         eventId:   conv.conversion_id,
       });
-      await db.from('conversions')
+      await db().from('conversions')
         .update({
           // Only true when Meta actually accepted it. A 400 is a delivery
           // failure, and flagging it sent hides a dead optimiser feed.
@@ -105,7 +111,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         })
         .eq('conversion_id', conv.conversion_id);
     } catch (e: any) {
-      await db.from('conversions')
+      await db().from('conversions')
         .update({ capi_response: { error: String(e) } })
         .eq('conversion_id', conv.conversion_id);
     }

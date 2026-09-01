@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { db } from '../lib/db';
+import { db, missingConfig } from '../lib/db';
 import { resolveOffer } from '../lib/offers';
 
 const SLUG = /^[a-z0-9-]{1,32}$/;
@@ -15,6 +15,13 @@ const SLUG = /^[a-z0-9-]{1,32}$/;
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const q = req.query as Record<string, string>;
+
+  const configError = missingConfig();
+  if (configError) {
+    console.error(configError);
+    return res.status(503).send('not configured');
+  }
+
 
   const ip =
     (req.headers['x-forwarded-for'] as string || '').split(',')[0].trim() || undefined;
@@ -34,7 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // it will actually be sent to rather than one inferred later.
   const offer = resolveOffer(req.headers.host as string | undefined);
 
-  const { data, error } = await db
+  const { data, error } = await db()
     .from('clicks')
     .insert({
       offer:       offer?.name || null,

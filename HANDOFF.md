@@ -569,6 +569,49 @@ Per burner domain, two slow steps to do at purchase time, not at launch:
 - TikTok/Google/Snap/Reddit/Pinterest conversion adapters — only Meta is built
 - The daily optimiser — deliberately not built, needs live data first
 
+## LAUNCH CHECKLIST — everything left, in order
+
+Everything Claude can do without credentials is done. What remains needs
+Ahmed's secrets, his legal agreement, or his money. In dependency order:
+
+| # | Step | Where | Why it blocks |
+|---|---|---|---|
+| 1 | Tick Commercial Terms, click **Add ad account** | Meta -> Kho's Recs -> Ad accounts (staged) | Ad account must be in the portfolio that owns the verified domain |
+| 2 | Create a **Dataset** | Meta -> Data Sources -> Datasets | ClickBank CAPI needs a Pixel/Dataset ID |
+| 3 | Generate a CAPI **access token** | Meta, on that dataset | Credential. Ahmed only |
+| 4 | Paste Pixel ID + token into ClickBank | ClickBank -> Integrations -> Meta | Turns on server-side Purchase events |
+| 5 | Set 4 env vars in Vercel Production | `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `POSTBACK_SECRET`, `OFFERS` | `/api/*` returns 503 until then |
+| 6 | Set the ClickBank **postback** | ClickBank -> Integrations -> Postback/Pixels | Conversions never reach the database otherwise |
+| 7 | **Rotate the ClickBank API key** | ClickBank -> API Management | Pasted into chat; currently has Orders Read/Write + Subscription Modification |
+| 8 | Run the smoke test | `template/README.md` | Proves the exact link the audit found broken |
+| 9 | Change the draft campaign to **Sales**, optimising on `Purchase` | Meta Ads Manager | Traffic optimises for clicks, the failure mode this stack exists to fix |
+
+Values needed for step 5:
+
+```
+SUPABASE_URL=https://xiodpbhapjitjqtuavwy.supabase.co
+POSTBACK_SECRET=   # openssl rand -hex 24
+OFFERS={"thecravingsnote.com":{"name":"purisaki","url":"https://b4802imbtdqkj90h8ixt32-vno.hop.clickbank.net/?cbpage=lp1&aff_sub1={subid}&traffic_source=meta&traffic_type=paid"}}
+```
+
+Postback URL for step 6:
+
+```
+https://thecravingsnote.com/api/pb?subid={aff_sub1}&payout={affiliate_earnings}&txn={receipt_id}&k=YOUR_SECRET
+```
+
+## Still deliberately NOT built
+
+- **Spend ingest** into `spend_daily`. Until it exists `ad_decisions` is empty
+  and `adstack_status` reads "Clicks are landing but no spend has been
+  ingested." Needs a Meta Marketing API token, so it is gated on Ahmed.
+- **Reconciliation ingest** for refunds/reversals. ClickBank's affiliate
+  postback does not document a reversal event, so `conversions.status` never
+  becomes `reversed` on its own and `tracker_health.revenue_reversed` stays 0.
+  On a 60-day-guarantee physical product this matters from the first sale.
+  Needs the rotated API key.
+- **The optimiser.** Reads `ad_decisions`, writes `decisions`. Needs live data.
+
 ## Before deploying, non-negotiable
 
 1. Run `template/supabase/schema.sql` in the Supabase SQL editor. It is

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { db } from '../lib/db';
+import { db, missingConfig } from '../lib/db';
 import { resolveOffer, offerUrlWithSubId } from '../lib/offers';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -11,6 +11,13 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const q = req.query as Record<string, string>;
+
+  const configError = missingConfig();
+  if (configError) {
+    console.error(configError);
+    return res.status(503).send('not configured');
+  }
+
   const cid = q.cid || (req.cookies?.cid ?? '');
 
   // The click-out write also returns fbclid, so forwarding it costs no extra
@@ -18,7 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // would error the query rather than just miss.
   let fbclid: string | null = null;
   if (UUID.test(cid)) {
-    const { data, error } = await db.from('clicks')
+    const { data, error } = await db().from('clicks')
       .update({ clicked_out: true, clicked_out_ts: new Date().toISOString() })
       .eq('click_id', cid)
       .select('fbclid')

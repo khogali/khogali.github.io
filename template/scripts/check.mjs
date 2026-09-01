@@ -118,5 +118,25 @@ const noFb = offerUrlWithSubId(cb, cid, { fbclid: null, ttclid: undefined });
 assert.ok(!noFb.includes('fbclid'), 'null extras must be skipped');
 assert.ok(!noFb.endsWith('&') && !noFb.includes('=&'), 'no dangling params');
 
+// ---- 8. missing config must be a handler-level 503, not a module crash -----
+// The client used to be built at module scope with `!`. A missing env var threw
+// during module load, so Vercel answered an opaque 500 before any handler ran,
+// which masked /api/pb's deliberate 503 and its diagnostic message.
+const { missingConfig } = await import('../lib/db.ts');
+const saved = { u: process.env.SUPABASE_URL, k: process.env.SUPABASE_SERVICE_KEY };
+delete process.env.SUPABASE_URL; delete process.env.SUPABASE_SERVICE_KEY;
+assert.match(missingConfig() ?? '', /SUPABASE_URL/, 'missing URL must be named');
+process.env.SUPABASE_URL = 'https://x.supabase.co';
+assert.match(missingConfig() ?? '', /SUPABASE_SERVICE_KEY/, 'missing key must be named');
+process.env.SUPABASE_SERVICE_KEY = 'k';
+assert.equal(missingConfig(), null, 'complete config must report no error');
+if (saved.u) process.env.SUPABASE_URL = saved.u; else delete process.env.SUPABASE_URL;
+if (saved.k) process.env.SUPABASE_SERVICE_KEY = saved.k; else delete process.env.SUPABASE_SERVICE_KEY;
+for (const f of ['api/c.ts','api/go.ts','api/pb.ts']) {
+  const src = read(f);
+  assert.ok(src.includes('missingConfig()'), `${f} must guard on config`);
+  assert.ok(!/(?<![\w)])db\s*\.from\(/.test(src), `${f} still uses the old eager db.from`);
+}
+
 console.log(`ok — ${keys.length} data-v slots, variant b overrides ${bKeys.join(', ')}, ` +
             `${seeded.size} config keys wired, offer resolver green`);
