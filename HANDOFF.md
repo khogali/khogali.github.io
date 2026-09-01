@@ -118,8 +118,8 @@ scalar subqueries, so it is the likelier half to need a fix on first run.
 | Live URL | `https://adstack-three.vercel.app` — `/lp/default` returns **200** |
 | Burner domain | **`thecravingsnote.com`** — bought, attached to Production, apex only (www redirect deliberately OFF) |
 | Offer | **Purisaki Berberine Patches** (confirmed 2026-09-01) |
-| ClickBank | nickname **`ashilkawi`** (also owns `a7medkhoga`); vendor `otppurisak` |
-| **BLOCKER** | **Hoplinks return `errCode=accntstate`. No sale can be credited. See below.** |
+| ClickBank | nickname **`shilkawia`** (new, hops cleanly). `ashilkawi` and `a7medkhoga` are dead — `accntstate`. Vendor `otppurisak` |
+| **OPEN** | **Hoplink lands on the wrong product (`/nuubu/`, not Purisaki). Email the vendor. See below.** |
 
 **The SQL is no longer unverified.** Seeded synthetic data and every verdict was
 correct: `ad-cut` 200 clicks/$300/0 conv -> CUT; `ad-scale` 150/$200/5 conv ->
@@ -162,7 +162,51 @@ domains to www" checkbox is ON by default and was deliberately unchecked, becaus
 a www redirect adds a hop on paid traffic and breaks the `fb.1.` subdomain index
 in `lib/capi.ts` if that path is ever re-enabled.
 
-## BLOCKER: ClickBank hoplinks do not track (found 2026-09-01)
+## accntstate: SOLVED 2026-09-01 by a new nickname
+
+`shilkawia` was created and hops cleanly, no `errCode`. The two older nicknames
+stay broken and must not be used:
+
+| Nickname | Hop result |
+|---|---|
+| `zzqxnotarl` (control, fake) | `errCode=invalidnickname` |
+| `a7medkhoga` (2020) | `errCode=accntstate` — dead |
+| `ashilkawi` (2022) | `errCode=accntstate` — dead |
+| **`shilkawia`** (2026-09-01) | **clean hop to buy-purisaki.com** |
+
+Whatever `accntstate` is, it is per-nickname, not per-master-account. A fresh
+nickname routes around it. Not worth a support ticket now.
+
+## OPEN: the hoplink points at the WRONG PRODUCT
+
+`https://shilkawia.otppurisak.hop.clickbank.net/` lands on
+**`buy-purisaki.com/nuubu/product`** — Nuubu is a different Orbio product
+(detox foot patches), not Purisaki Berberine. Confirmed consistent over three
+runs, so it is not rotation.
+
+Curiously, the *errored* hops earlier showed
+`destinationUrl=.../purisaki-berberine/product?ang=clickbank-otp`, so the
+intended destination exists. The vendor's own router is choosing Nuubu as the
+default.
+
+**This must be fixed before spending.** A cravings/berberine landing page on
+`thecravingsnote.com` that hands off to a foot-patch offer breaks the funnel at
+exactly the point the visitor decides.
+
+The fix is the vendor, not code. Their affiliate page says explicitly to email
+`rasa.neniske@orbio.world` or Telegram `@rasaorbio` for the affiliate link.
+That is what that instruction is for. Verify whatever they send:
+
+```bash
+curl -sk -L -o /dev/null -w '%{url_effective}\n' '<LINK>'
+```
+
+Good = `buy-purisaki.com/purisaki-berberine/...` with no `errCode`.
+
+Also note the demographics and creative pack in the Drive are Purisaki-specific.
+If the vendor only offers Nuubu on this hop, the whole offer choice reopens.
+
+## (historical) ClickBank hoplinks did not track (found 2026-09-01)
 
 Both of his account nicknames return `errCode=accntstate` on a hop:
 
