@@ -190,7 +190,16 @@ program, Dub Partners is the right tool.
 - Set `config.target_payout` / `config.target_cvr` once the offer is confirmed.
   Still at the $75 / 2.5% defaults, which judge a different offer.
 - Landing page (build after offer is picked)
-- Deploy tracker: Supabase project + Vercel + throwaway domain (~$12)
+- Deploy tracker: Supabase project + Vercel + domain (~$12). **He chose
+  `khomolab`** (2026-09-01, TLD not yet stated). Two things ride on it:
+  - The README guardrail says use a *throwaway* domain, because a flagged ad
+    domain takes its blast radius with it. If khomolab is a brand he intends to
+    keep, that guardrail says use something disposable instead. Raised with him.
+  - ClickBank's Meta CAPI integration requires a **verified domain** in Meta
+    Business. Do that early; it is a slow step to discover late.
+  - Deploy on the apex (`khomolab.tld`), not `www.` or a subdomain. If
+    `lib/capi.ts` is ever re-enabled, its `fb.1.` prefix hardcodes subdomain
+    index 1, which is only correct on the apex and fails silently otherwise.
 - TikTok/Google/Snap/Reddit/Pinterest conversion adapters — only Meta is built
 - The daily optimiser — deliberately not built, needs live data first
 
