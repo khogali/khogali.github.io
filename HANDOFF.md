@@ -531,15 +531,30 @@ Green when the final URL is on `buy-purisaki.com` with no `errCode`.
 ## API key hygiene
 
 He pasted a live ClickBank API key into chat on 2026-09-01. It is named
-`CL Assistant` and, per the API Management screen, is **Active with full
-permissions on both accounts**: Analytics, Products, Orders Read, **Orders
-Read/Write**, and **Subscription Modification**. That is write access to orders
-and subscriptions, not just reporting.
+`CL Assistant`. Inspecting API Management showed it was **worse than first
+recorded**: full permissions on **all three** nicknames — `a7medkhoga`,
+`ashilkawi` and `shilkawia` — Analytics, Products, Orders Read, **Orders
+Read/Write** and **Subscription Modification**.
 
-**Rotate it**, and scope the replacement to Analytics + Orders Read only, which
-is all the reconciliation job would ever need. Claude declined to use or store
-it; the repo was scanned and contains no secrets in the working tree or in any
-commit.
+**DONE 2026-09-01 — scope reduced.** Claude edited the key down to **Analytics
+API + Orders/Tickets API Read only**, on all three accounts. Products,
+Orders Read/Write and Subscription Modification are now unchecked and saved.
+All write access is gone; read is all the reconciliation job would ever need.
+
+Safe to do because ClickBank reported **Last Used: N/A** — the key had never
+been called — and a repo scan found no reference to it anywhere in the working
+tree or in any commit. Nothing broke.
+
+**STILL OUTSTANDING — Ahmed only: click `Regenerate Key`.**
+Integrations -> API Management -> the `CL Assistant` row -> the three-dot menu
+-> **Regenerate Key**. The key *value* is still the burned one; narrowing its
+scope did not change it. Claude deliberately did not click Regenerate, because
+the new value renders unmasked in that table and would land in the transcript —
+the exact mistake that burned the first key. The new value stays readable on
+that page afterwards, so nothing needs copying down in the moment.
+
+`Regenerate` beats `Delete` here: it invalidates the old value while keeping the
+entry and its now-correct scopes.
 
 **Purisaki hoplink shape, confirmed from inside the account:**
 
