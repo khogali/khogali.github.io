@@ -32,6 +32,41 @@ better alternatives.**
 > sessions. Same spirit — lead with the outcome, critique own work, one question
 > at the end. Reconcile the two if it ever matters.
 
+## LIVE — campaign running since 2026-09-01 ~19:30 UTC
+
+**Five ads are ACTIVE at $40/day on Purchase.** Read this section before
+anything below it; most of the file is the history of how it got here.
+
+| What | Value |
+|---|---|
+| Campaign | `120252090098770351` — TCN \| Purisaki \| Sales-Purchase \| v1, CBO $40/day |
+| Ad set | `120252090110050351` — US, Advantage+ Audience, age 25+ signal, OFFSITE_CONVERSIONS on PURCHASE |
+| Ads | A1 `120252090124840351` · A2 `120252090130440351` · A3 `120252091576930351` · A4 `120252091584800351` · A5 `120252091590750351` |
+| Landing page live ads hit | `/lp/default` = the **long advertorial** (11KB). Old 200-word page kept at `/lp/short` |
+| Break-even CPC | **$0.40** (`57.35 × 0.007`). Was $2.02 under a wrong CVR — see below |
+| Database | `clicks` **0**, `conversions` 0, `spend_daily` 0, `plumbing: ok`. Clean baseline; the next click is a stranger |
+| Spend feed | `/api/spend` deployed, `CRON_SECRET` + `META_AD_ACCOUNT_ID` set, **`META_ADS_TOKEN` missing**. Spend is pulled on request through the `meta-ads` MCP until then |
+
+**Daily loop:** `select * from adstack_status;` — one row. Every ad reads WAIT
+until it clears $75 spend AND 100 clicks; at ~$2 real CPC that is ~5 days for
+the first verdict. Until a sale lands, ROI is -100% and means nothing. Watch
+only CPC (above ~$2.50 the arithmetic cannot close) and `tracker_health`
+click-out % (under 25% the advertorial is failing; over 45% it is doing its
+job and any shortfall is on the vendor page).
+
+**Say "pull spend"** in a fresh session and Claude fills `spend_daily` through
+the MCP.
+
+### Still for Ahmed
+
+1. **Regenerate the ClickBank API key** — API Management → `CL Assistant` → ⋮
+   → Regenerate. Scopes already narrowed to Analytics + Orders Read; the value
+   is still the one pasted into chat.
+2. **`META_ADS_TOKEN`** — only if the nightly cron is wanted. Needs a Meta app,
+   which needs developer verification, which was blocked by contact-point
+   problems. Decided 2026-09-01: **not needed now**, the MCP covers spend.
+3. **Email capture** on the LP — the one funnel piece designed but not built.
+
 ## Where the code is
 
 Cloned locally at `/Users/shilkawi/Developer/Personal Repo/adstack`, branch
@@ -858,20 +893,11 @@ That was tried twice, before and after installing it, and Meta rejects it with
 lives under the Traffic and Engagement objectives, and Traffic is ruled out.
 The campaign stays on **Purchase**.
 
-## LAUNCH CHECKLIST — everything left, in order
+## LAUNCH CHECKLIST — COMPLETE 2026-09-01
 
-Everything Claude can do without credentials is done. What remains needs
-Ahmed's secrets, his legal agreement, or his money. In dependency order:
-
-| # | Step | Where | Why it blocks |
-|---|---|---|---|
-| 1-6 | ~~Portfolio, Page, ad account, dataset, CAPI token, env vars, postback~~ | **ALL DONE** 2026-09-01 | — |
-| 7 | **Rotate the ClickBank API key** | ClickBank -> Settings -> API Management | Pasted into chat; currently Active with Orders Read/Write + Subscription Modification |
-| 8 | **Add a payment method** | Meta -> Billing & payments | Financial credential. **Ahmed only.** Account shows "You haven't added any payment methods"; Ads Manager blocks publishing until one exists |
-| 9 | Create the first campaign | Meta Ads Manager | **Sales** objective optimising on `Purchase`. Never Traffic — Traffic optimises for clicks, the failure mode this stack exists to fix |
-
-Steps 7 and 8 are the only things standing between here and a live ad, and both
-are Ahmed-only by rule: one is a credential rotation, the other is card details.
+Every step is done. Payment method added by Ahmed, phone verified by Ahmed
+(see "Phone verification" below for why that took three attempts), campaign
+built and activated by Claude through the Meta Ads MCP once the gate cleared.
 
 ### Verified live 2026-09-01
 
@@ -982,16 +1008,124 @@ conversion row was written, which only happens when the secret compares equal.
 - `network=clickbank` is hardcoded because `NETWORK_NAME` is unset, and the
   dedupe index is on `(network, network_txn_id)` — it must be stable.
 
+## Phone verification — the gate that blocked launch (2026-09-01)
+
+Meta refused to publish any ad with:
+
+> *"Phone number required: You need to verify a phone number **for this ad
+> account** before you can run ads."*
+
+**Ad-account-level. Not Accounts Center.** Ahmed verified a number in Accounts
+Center first and it changed nothing — that is the personal account. The
+ad-account flow lives in **Ads Manager → Account Overview** and offers the code
+by SMS *or voice call*. Claude could not surface it from a second browser
+session; Ahmed found it from his own. The `ads_get_errors` call confirmed the
+gate had cleared before activation.
+
+**Contact points, as they now stand:**
+
+| Contact | State |
+|---|---|
+| `a.khogali@icloud.com` | Primary email, confirmed. Replaced `selectionneshop@gmail.com`, a Gmail Ahmed **cannot recover** — it had been the contact on the ad account, both Pages and Accounts Center, meaning every rejection notice and recovery flow went to a dead mailbox |
+| `+1 215 954 2339` | Confirmed, on the ad account as mobile + WhatsApp |
+| `+1 484 454 1099` | **Removed.** Sat at "Pending confirmation" because it was entered without ticking the Facebook profile checkbox, so codes never worked |
+
+Business portfolio 2FA is still **"No one"**. Worth turning on now that there is
+a working recovery email and a card on the account.
+
+## Preview and crawler clicks — the bug the audit found (commit `570410d`)
+
+163 of the first 208 rows in `clicks` had `ad_id = '{{ad.id}}'` — the literal,
+unexpanded macro. Meta's preview renderer and review crawler fetch the
+destination URL without substituting macros; `facebookexternalhit` fetches it
+for link previews. None are humans, none click out, and they had already made
+`adstack_status` report *"Only 1.0% of clicks reach the offer. The landing page
+is the problem."* about a page that was fine.
+
+`/api/c` now skips the insert when any query value contains `{{` or the UA
+matches `facebookexternalhit|meta-externalagent|bot|crawler|spider|preview`.
+It **still redirects** so previews render. `check.mjs` enforces both. Verified
+live: newest junk row 14:36, macro-literal test hits at 18:29 logged nothing.
+
+## The advertorial (commits `a5554e3`, `3f5038e`)
+
+The original `/lp/default` was 200 words: problem framing, three bullets,
+"a plant-derived approach," a button. It promised *"a short read"* and delivered
+a redirect onto a vendor page built for cold traffic. Nobody was doing the
+pre-sell, and the tonal cliff — quiet health column into `JUST LEAKED` with
+before/after bikini photos — reads as bait-and-switch.
+
+The rewrite (~900 words) does the persuading: the reader's own words as a pull
+quote; *"it is not a discipline problem"*, which pre-handles the I've-tried-
+everything objection by agreeing with it; the turn (stop deciding harder, put
+something in place that needs no decision); **the mechanism**, which was missing
+entirely — berberine's well-documented oral bioavailability problem and why a
+transdermal format addresses that specific problem, described as mechanism and
+attributed to the company, never asserted as outcome; and an **honest handoff**:
+
+> *"Fair warning, because we would rather you hear it from us: it reads like a
+> sales page, because it is one."*
+
+A warned reader does not feel tricked, and it is true. CTA now matches:
+*"See how the delivery method works →"*.
+
+Creatives are immutable in the Marketing API, so rather than rebuild five ads
+the rewrite **became** `/lp/default` and the old page moved to `/lp/short`. Live
+ads served the new page with zero Meta changes. The homepage was rewritten in
+the same pass — it was a three-paragraph stub, which reads as a throwaway
+affiliate bridge to anyone who checks the bare domain.
+
+`check.mjs` now enforces the pixel rules, `#cta`, and cid carry-through across
+**every** `lp/*/` directory, not `lp/default` alone.
+
+**Designed, not built: email capture.** The only part of this funnel Ahmed
+would still own if the ad account died. Needs a `leads` table, `/api/lead`, and
+an inline form. Next build.
+
+## target_cvr was wrong by 5x (fixed 2026-09-01)
+
+`config.target_cvr` was `0.0352` — ClickBank's **vendor-page** conversion rate.
+But `ad_performance.cvr_pct = conversions / tracked_clicks`, i.e. per **ad
+click**, and the two differ by the whole funnel in between: ad click → ~90%
+reach the LP → ~40% click out → ~2% of those buy ≈ **0.7%**.
+
+Under 3.52% the break-even CPC read **$2.02**, which would have called an ad
+burning $2.00/click healthy. Now `0.007`, break-even **$0.40**. The config row
+carries a note explaining this so it does not get "corrected" back. Revisit
+once real CVR exists.
+
+## Meta developer account — decided NOT needed (2026-09-01)
+
+Creating a Meta app (for a system-user token → `META_ADS_TOKEN` → nightly
+cron) was blocked by developer verification, which was blocked by the dead
+email. Rather than fight it: the **Meta Ads MCP** is authorized at user scope
+and reads insights without any app. What the app buys is *automation*, not
+capability. At one campaign, a pull on request is fine. Revisit when running
+several offers. `tcn_kho` (`61593965762611`) already has the ad account with
+**View performance** only, so the moment an app exists it is one token away.
+
+**Do not reuse the Conversions API System User for this.** Its token is the
+one pasted into ClickBank; a third party already holds that identity.
+
+## Ads MCP server permissions — Ahmed's call (2026-09-01)
+
+Business Settings → Ads MCP server shows all **7 of 7 actions Allowed** on the
+ad account, including budget edits, campaign creation and on/off. Claude
+recommended blocking actions (reads survive blocking; the write side routes
+around the "recommends, never acts" design). **Ahmed chose to keep all 7.**
+Claude still builds everything paused and shows it before anything spends —
+that is a habit, not a setting.
+
 ## Still deliberately NOT built
 
-- **Spend ingest** into `spend_daily`. Until it exists `ad_decisions` is empty
-  and `adstack_status` reads "Clicks are landing but no spend has been
-  ingested." Needs a Meta Marketing API token, so it is gated on Ahmed.
+- **Email capture** on the LP. Designed 2026-09-01, highest-value next build.
+- **Nightly spend cron.** Code exists (`/api/spend`); gated on `META_ADS_TOKEN`,
+  which is gated on a Meta app. Spend is pulled through the MCP on request.
 - **Reconciliation ingest** for refunds/reversals. ClickBank's affiliate
   postback does not document a reversal event, so `conversions.status` never
   becomes `reversed` on its own and `tracker_health.revenue_reversed` stays 0.
-  On a 60-day-guarantee physical product this matters from the first sale.
-  Needs the rotated API key.
+  On a 60-day-guarantee product this matters from the first sale. Needs the
+  regenerated API key (Analytics + Orders Read is enough).
 - **The optimiser.** Reads `ad_decisions`, writes `decisions`. Needs live data.
 
 ## Before deploying, non-negotiable
@@ -1021,31 +1155,38 @@ campaign** is industry-typical. He may not have that. The cheap path is a $50–
 plumbing test on push traffic to prove tracking/postbacks/CAPI fire correctly,
 before spending real money on Meta learning what converts.
 
-## Key numbers already worked
+## Key numbers, corrected 2026-09-01
 
 ```
-break-even CPC = payout × conversion rate
+break-even CPC = payout × conversion rate PER AD CLICK
+               = $57.35 × 0.7% = $0.40
 ```
-- Performance e-com: $75 × 2.5% = **$1.88 break-even CPC** (model 1.5% → $1.13)
-- Supplements: $150 × 1% = $1.50, but gravity 1156 = burned angles + ban risk
+
+The 2.5% / 3.52% figures used earlier in this file were vendor-page rates and
+overstated break-even ~5x. Per-ad-click is the only rate that matches how
+`ad_performance` measures it.
+
+At Meta's realistic $1.50–2.50 CPC on this niche, **the arithmetic does not
+close at 0.7%.** That is the honest read. Two things can move it: the advertorial
+lifting click-out and pre-selling well enough to push per-click CVR toward
+1.5–2%, or Meta finding a pocket with materially cheaper clicks. Both are
+exactly what the first 5 days are for. Do not scale on hope; wait for the
+verdict.
 
 ## Next action
 
-Two tracks, and they do not block each other.
+The campaign is live. The next action is **to wait**, and to resist doing
+anything else.
 
-1. **Approval.** Email Orbio about Derila. Nothing downstream moves until it is
-   answered, and it is the step that silently kills plans.
-2. **Plumbing.** Does not need an offer or a dollar of ad spend. Deploy, then
-   run the smoke test in `template/README.md`: one self-made click, one curl'd
-   postback, confirm `conversions.click_id` is non-null and
-   `tracker_health.unmatched_postbacks` is 0. That verifies the exact link that
-   was silently broken before the audit.
+1. **Day 1–2:** say "pull spend." Confirm real clicks are landing in `clicks`
+   with real ad IDs. Confirm `tracker_health.clickout_pct` is above 25%. If
+   `clicks` is still empty 4 hours after activation, that is worth
+   investigating; before that it is normal.
+2. **Day 3–5:** first ad clears the judgement gate. Read `ad_decisions`, act on
+   the one verdict it gives, nothing else.
+3. **Whenever:** regenerate the ClickBank key. Build email capture.
 
-If Derila is rejected, Purisaki needs no approval and has the same economics.
-Say so plainly if he takes it: it is a weight-loss patch, which reintroduces the
-supplement ad-account risk that e-commerce was chosen to avoid.
-
-Once live, the daily loop is one query. Do not read raw tables:
+The daily loop is one query. Do not read raw tables:
 
 ```sql
 select * from adstack_status;
