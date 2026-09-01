@@ -150,11 +150,25 @@ branch `adstack-main`, root directory `template`, both saved. Vercel's own
 directory is correct since that header comes from `template/vercel.json`. Before
 the audit this URL was `/default` and would have 404'd every paid click.
 
-`/api/c` and `/api/pb` currently return **500**, which is expected: `lib/db.ts`
-calls `createClient` at module scope with `SUPABASE_URL!`, so it throws before
-any handler runs. Note this masks the deliberate 503 from the `POSTBACK_SECRET`
-fail-closed check — the refusal still happens, just with the wrong status and no
-diagnostic. Not worth fixing before env vars exist.
+**The functions were broken from the very first deploy, and it was misdiagnosed
+twice as "missing env vars".** Vercel transpiles the `.ts` handlers to `.js`;
+without `"type": "module"` Node loaded them as CommonJS and the process died on
+the first `import` before any handler code ran. Adding it exposed the second
+half: ESM requires file extensions on relative specifiers, so `'../lib/db'` had
+to become `'../lib/db.js'` (TypeScript maps it back to the `.ts`). Fixed in
+`f65061e` and `f0a4461`.
+
+Two lessons worth keeping:
+- `npm run check` printed `MODULE_TYPELESS_PACKAGE_JSON` on every run and it was
+  dismissed as cosmetic. It was the bug.
+- Module-load failures produce an opaque `FUNCTION_INVOCATION_FAILED`, which
+  reads like a config problem. **Read the Vercel runtime logs, do not infer.**
+  `get_runtime_logs` gave the answer in one call after an hour of wrong guesses.
+
+**Current state, verified live:** `/api/c`, `/api/go` and `/api/pb` all return
+`503 not configured`. The handlers run; only the env vars are missing. When one
+route lags behind the others, check the `dep=` in the log — a stale function
+from the previous deployment serves for a short window after a deploy.
 
 Four env vars remain, which Claude will not set because they are secrets:
 `SUPABASE_URL` = `https://xiodpbhapjitjqtuavwy.supabase.co`, plus
