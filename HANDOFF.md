@@ -118,7 +118,10 @@ scalar subqueries, so it is the likelier half to need a fix on first run.
 | Live URL | `https://thecravingsnote.com` — `/`, `/lp/default`, `/privacy`, `/terms` all 200 |
 | Meta portfolio | **Sélectionné store**, `business_id=1117661844127145` (moved off `Kho's Recs` 2026-09-01) |
 | Meta domain | **`thecravingsnote.com` VERIFIED** in Sélectionné store, asset id `2470795726763483` |
-| Meta ad account | `124463681691678` — personal, **cannot be claimed**, unbilled. A new one must be created inside the portfolio |
+| Meta Page | **`The Cravings Note`** — `1203534016185819`, created in the portfolio 2026-09-01 |
+| Meta ad account | **`The Cravings Note`** — `3975035259299444`, created in the portfolio 2026-09-01. Clean, no campaigns |
+| (dead) old ad account | `124463681691678` — personal, unbilled, unclaimable. Holds a draft Traffic campaign. **Do not use** |
+| (dead) old Page | `Sélectionné store` `597277517109514` — stuck in inaccessible portfolio `175729199698075`, shows `Request Sent` forever. **Do not use** |
 | Burner domain | **`thecravingsnote.com`** — bought, attached to Production, apex only (www redirect deliberately OFF) |
 | Offer | **Purisaki Berberine Patches**, lander `cbpage=lp1`, on Meta (decided 2026-09-01) |
 | ClickBank | nickname **`shilkawia`** (new, hops cleanly). `ashilkawi` and `a7medkhoga` are dead — `accntstate`. Vendor `otppurisak` |
@@ -210,7 +213,25 @@ mismatch is the diagnostic; nothing in Business Manager surfaces it.
 Recovering admin on the third portfolio means a Meta support ticket, and the
 prize is a Page named after a French store that does not match the funnel.
 
-## SETUP SPEC for the new assets
+## Assets created 2026-09-01 — all in `Sélectionné store` / `1117661844127145`
+
+| Asset | Name | ID |
+|---|---|---|
+| Domain | `thecravingsnote.com` | `2470795726763483` — **Verified** |
+| Page | The Cravings Note | `1203534016185819` |
+| Ad account | The Cravings Note | `3975035259299444` |
+| Dataset | — | **not yet created** |
+
+Ad account contact email is `selectionneshop@gmail.com`; Ahmed is admin on both.
+The new ad account has no campaigns, so the wrong-objective draft that lived in
+`124463681691678` is not carried over.
+
+**UNVERIFIED: ad account currency and time zone.** Meta's UI would not surface
+them across several attempts. They must be **USD** and **UTC**, and neither can
+be changed after the account has spent. Confirm before the first dollar:
+Ads Manager -> Billing & payments, or the account creation confirmation.
+
+## SETUP SPEC for the new assets (as built)
 
 All three go in **`Sélectionné store` / `1117661844127145`**, the portfolio that
 holds the verified domain.
