@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { db } from '../lib/db';
+import { resolveOffer } from '../lib/offers';
 
 const SLUG = /^[a-z0-9-]{1,32}$/;
 
@@ -29,9 +30,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .map(v => v.trim()).filter(v => SLUG.test(v));
   const variant = variants[Math.floor(Math.random() * variants.length)] || 'a';
 
+  // Same host-to-offer map /api/go uses, so a click is stamped with the offer
+  // it will actually be sent to rather than one inferred later.
+  const offer = resolveOffer(req.headers.host as string | undefined);
+
   const { data, error } = await db
     .from('clicks')
     .insert({
+      offer:       offer?.name || null,
       source:      q.s   || 'unknown',
       campaign_id: q.c   || null,
       adset_id:    q.as  || null,

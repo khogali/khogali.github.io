@@ -190,16 +190,34 @@ program, Dub Partners is the right tool.
 - Set `config.target_payout` / `config.target_cvr` once the offer is confirmed.
   Still at the $75 / 2.5% defaults, which judge a different offer.
 - Landing page (build after offer is picked)
-- Deploy tracker: Supabase project + Vercel + domain (~$12). **He chose
-  `khomolab`** (2026-09-01, TLD not yet stated). Two things ride on it:
-  - The README guardrail says use a *throwaway* domain, because a flagged ad
-    domain takes its blast radius with it. If khomolab is a brand he intends to
-    keep, that guardrail says use something disposable instead. Raised with him.
-  - ClickBank's Meta CAPI integration requires a **verified domain** in Meta
-    Business. Do that early; it is a slow step to discover late.
-  - Deploy on the apex (`khomolab.tld`), not `www.` or a subdomain. If
-    `lib/capi.ts` is ever re-enabled, its `fb.1.` prefix hardcodes subdomain
-    index 1, which is only correct on the apex and fails silently otherwise.
+- Deploy tracker: Supabase project + Vercel + burner domains.
+
+## Domains and hosting, decided 2026-09-01
+
+**`khomolab.com` is a keeper and must NOT be the ad domain.** He raised it, was
+shown the blast-radius guardrail, and chose burner domains instead. Meta domain
+flags are slow to reverse and often permanent, and cold traffic to someone
+else's advertorial funnel is the highest-risk configuration there is.
+
+**One burner domain per offer, one Vercel project for all of them.** Vercel
+allows 50 domains per project even on Hobby, so this does not need a project per
+offer. `lib/offers.ts` resolves hostname -> offer on both `/api/c` and
+`/api/go` via an `OFFERS` JSON env map, normalising case, port and a leading
+`www.`, and falling back to `OFFER_URL` when the host is unknown or `OFFERS` is
+malformed. `clicks.offer` is stamped at click time and carries through
+`ad_performance` into `ad_decisions`, so per-offer P&L is one `group by`.
+
+**Vercel Hobby is not usable.** Its fair use guidelines restrict it to
+"non-commercial, personal use only" and paid affiliate campaigns are commercial.
+Pro is $20/mo. He has approved that spend. The old "~$1/mo infra" line in this
+handoff was wrong; real infra is ~$21/mo before a dollar of ad spend.
+
+Per burner domain, two slow steps to do at purchase time, not at launch:
+- **Meta domain verification** in Business Manager. ClickBank's CAPI integration
+  will not accept events for an unverified domain.
+- Deploy on the apex, not `www.` or a subdomain. If `lib/capi.ts` is ever
+  re-enabled its `fb.1.` prefix hardcodes subdomain index 1, correct only on the
+  apex, and wrong silently everywhere else.
 - TikTok/Google/Snap/Reddit/Pinterest conversion adapters — only Meta is built
 - The daily optimiser — deliberately not built, needs live data first
 

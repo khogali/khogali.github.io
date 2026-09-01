@@ -43,6 +43,12 @@ create table if not exists clicks (
   clicked_out_ts timestamptz
 );
 
+-- Which offer this click was sent to, stamped at click time from the burner
+-- domain it arrived on. One deploy serves many domains; without this, offers
+-- are only separable by ad_id, so "how is Derila doing overall" is unanswerable.
+alter table clicks add column if not exists offer text;
+
+create index if not exists clicks_offer_idx     on clicks (offer, ts desc);
 create index if not exists clicks_ts_idx        on clicks (ts desc);
 create index if not exists clicks_ad_idx        on clicks (ad_id, ts desc);
 create index if not exists clicks_variant_idx   on clicks (lp_slug, lp_variant, ts desc);
@@ -152,7 +158,9 @@ alter table decisions    enable row level security;
 -- ============================================================
 create or replace view ad_performance as
 with clk as (
-  select ad_id, source, date(ts) as day, count(*) as tracked_clicks
+  select ad_id, source, date(ts) as day,
+         count(*) as tracked_clicks,
+         max(offer) as offer
   from clicks
   where ad_id is not null
   group by 1, 2, 3
@@ -176,6 +184,7 @@ spine as (
 select
   sp.day,
   sp.source,
+  t.offer,
   s.campaign_id,
   s.adset_id,
   sp.ad_id,
@@ -251,6 +260,7 @@ w as (
   select
     p.ad_id,
     p.source,
+    max(p.offer)               as offer,
     max(p.campaign_id)         as campaign_id,
     max(p.adset_id)            as adset_id,
     min(p.day)                 as first_day,
@@ -280,7 +290,7 @@ m as (
   from w, cfg
 )
 select
-  m.ad_id, m.source, m.campaign_id, m.adset_id,
+  m.ad_id, m.source, m.offer, m.campaign_id, m.adset_id,
   m.first_day, m.last_day,
   m.spend, m.clicks, m.conversions, m.revenue, m.profit,
   m.roi_pct, m.cpc, m.cpa,

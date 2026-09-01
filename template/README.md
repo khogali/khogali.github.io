@@ -33,8 +33,46 @@ Meta ad  →  /api/c   →  /lp/<slug>  →  /api/go  →  affiliate offer
    `/lp/<slug>`.
 3. **Env** — set everything in `.env.example` in Vercel project settings.
    `POSTBACK_SECRET` is required; without it `/api/pb` answers 503.
-4. **Domain** — attach a dedicated domain. Keep it separate from your other sites;
-   if it gets flagged you don't want the blast radius touching anything else.
+4. **Domain** — one burner domain per offer. See below.
+5. **Plan** — Vercel's Hobby plan *"restricts users to non-commercial, personal
+   use only"* under its fair use guidelines. Running paid affiliate campaigns is
+   commercial, so this needs Pro at $20/mo, or a host whose free tier permits
+   commercial use. Budget for it: the infrastructure is not $1/mo.
+
+## One burner domain per offer
+
+Never point paid traffic at a domain you intend to keep. Meta domain flags are
+slow to reverse and often permanent, and cold traffic to an advertorial funnel
+for someone else's offer is the highest-risk configuration there is. Buy a
+throwaway per offer and treat it as consumable.
+
+This does **not** mean one deploy per offer. Vercel allows 50 domains per project
+even on Hobby, so attach every burner to the same project and let the hostname
+decide the offer:
+
+```json
+OFFERS={
+  "derila-sleep.com":   {"name":"derila",  "url":"https://HOPLINK?aff_sub1={subid}"},
+  "purisaki-trial.com": {"name":"purisaki","url":"https://HOPLINK?aff_sub1={subid}"}
+}
+```
+
+`lib/offers.ts` resolves the host on both `/api/c` and `/api/go`, so a click is
+stamped with the offer it will actually be sent to. It normalises case, strips
+the port and a leading `www.`, and falls back to `OFFER_URL` / `OFFER_NAME` when
+the host is unknown or `OFFERS` is malformed, because a bad env var must not take
+the funnel down.
+
+`clicks.offer` carries through to `ad_performance` and `ad_decisions`, so:
+
+```sql
+select offer, sum(spend), sum(revenue), sum(profit)
+from ad_decisions group by offer;
+```
+
+Each burner domain also needs its own **Meta domain verification** before
+ClickBank's Conversions API integration will accept events for it. Do that when
+you buy the domain, not when the campaign is ready.
 
 ## Check before you deploy
 

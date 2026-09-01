@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { db } from '../lib/db';
+import { resolveOffer, offerUrlWithSubId } from '../lib/offers';
 
 /**
  * CLICK OUT.  The landing page CTA points here.
@@ -17,14 +18,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .then(({ error }) => error && console.error('clickout failed', error));
   }
 
-  const base = process.env.OFFER_URL;
-  if (!base) return res.status(500).send('OFFER_URL not configured');
-
-  // {subid} placeholder in OFFER_URL gets the click_id.
-  const dest = base.includes('{subid}')
-    ? base.replace('{subid}', encodeURIComponent(cid))
-    : `${base}${base.includes('?') ? '&' : '?'}subid=${encodeURIComponent(cid)}`;
+  // Which offer depends on which burner domain this request came in on.
+  const offer = resolveOffer(req.headers.host as string | undefined);
+  if (!offer) return res.status(500).send('no offer configured for this host');
 
   res.setHeader('Cache-Control', 'no-store');
-  res.redirect(302, dest);
+  res.redirect(302, offerUrlWithSubId(offer.url, cid));
 }

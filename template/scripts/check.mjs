@@ -77,5 +77,33 @@ assert.ok(seeded.size > 0, 'config seed not found');
 for (const k of referenced) assert.ok(seeded.has(k), `view reads config key "${k}" that is never seeded`);
 for (const k of seeded) assert.ok(referenced.has(k), `config key "${k}" is seeded but no view reads it`);
 
+// ---- 7. host -> offer resolution -----------------------------------------
+// Imported, not restated: Node runs the .ts directly via type stripping, so
+// this exercises the code that actually ships. One burner domain per offer
+// means a wrong host either sends traffic to the wrong advertiser or drops it.
+const { resolveOffer, offerUrlWithSubId } = await import('../lib/offers.ts');
+
+const OFFERS = JSON.stringify({
+  'derila-sleep.com':  { name: 'derila',   url: 'https://hop.cb/derila?aff_sub1={subid}' },
+  'purisaki-trial.com':{ name: 'purisaki', url: 'https://hop.cb/purisaki?aff_sub1={subid}' },
+});
+const env = { OFFERS, OFFER_URL: 'https://fallback.example?x=1', OFFER_NAME: 'fallback' };
+
+assert.equal(resolveOffer('derila-sleep.com', env).name, 'derila');
+assert.equal(resolveOffer('WWW.Derila-Sleep.com', env).name, 'derila', 'www/case not normalised');
+assert.equal(resolveOffer('derila-sleep.com:443', env).name, 'derila', 'port not stripped');
+assert.equal(resolveOffer('purisaki-trial.com', env).name, 'purisaki');
+assert.equal(resolveOffer('unknown.com', env).name, 'fallback', 'unknown host must fall back');
+assert.equal(resolveOffer(undefined, env).name, 'fallback');
+// A malformed OFFERS must degrade to the single-offer vars, never take the funnel down.
+assert.equal(resolveOffer('derila-sleep.com', { OFFERS: '{not json', OFFER_URL: 'https://f', OFFER_NAME: 'f' }).name, 'f');
+assert.equal(resolveOffer('derila-sleep.com', {}), null, 'no config must be null, not a crash');
+
+const cid = '3f1a7c2e-9b4d-4a51-8e6f-1c2d3e4f5a6b';
+assert.equal(offerUrlWithSubId('https://h/o?aff_sub1={subid}', cid), `https://h/o?aff_sub1=${cid}`);
+assert.equal(offerUrlWithSubId('https://h/o?a=1', cid),           `https://h/o?a=1&subid=${cid}`);
+assert.equal(offerUrlWithSubId('https://h/o', cid),               `https://h/o?subid=${cid}`);
+assert.ok(!offerUrlWithSubId('https://h/o', 'a b&c=1').includes(' '), 'sub-ID must be url-encoded');
+
 console.log(`ok — ${keys.length} data-v slots, variant b overrides ${bKeys.join(', ')}, ` +
-            `${seeded.size} config keys wired`);
+            `${seeded.size} config keys wired, offer resolver green`);
