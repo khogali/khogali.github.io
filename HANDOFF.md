@@ -182,6 +182,69 @@ domains to www" checkbox is ON by default and was deliberately unchecked, becaus
 a www redirect adds a hop on paid traffic and breaks the `fb.1.` subdomain index
 in `lib/capi.ts` if that path is ever re-enabled.
 
+## Meta account structure — the trap, and the resolution (2026-09-01)
+
+**There are THREE business portfolios, two of them named the same thing.** This
+cost a lot of time; do not lose it again.
+
+| Portfolio | ID | State |
+|---|---|---|
+| `Kho's Recs` | `1766809867805983` | Empty. Domain was first verified here, then moved out |
+| `Sélectionné store` | `1117661844127145` | **The one to use.** Holds the verified domain. Empty otherwise |
+| `Sélectionné store` | `175729199698075` | **Inaccessible.** Holds the Page. Business Manager returns *"Sorry, this content isn't available right now"* |
+
+The Facebook Page `Sélectionné store` (`597277517109514`) is claimed by the
+third portfolio, which Ahmed cannot administer. That is why:
+
+- The Page shows `Request Sent` / pending approval forever — the approver is a
+  portfolio he has no admin access to.
+- No approve button exists anywhere. The Requests tab is empty and
+  `Manage Request` only offers *Cancel*.
+- Both usable portfolios report 0 Pages and 0 ad accounts.
+
+Found via **Page → Settings & privacy → `facebook.com/settings/?tab=profile_access`
+→ Business portfolio access**, which prints the owning portfolio ID. That ID
+mismatch is the diagnostic; nothing in Business Manager surfaces it.
+
+**Resolution: create fresh assets in `1117661844127145`. Do not chase the Page.**
+Recovering admin on the third portfolio means a Meta support ticket, and the
+prize is a Page named after a French store that does not match the funnel.
+
+## SETUP SPEC for the new assets
+
+All three go in **`Sélectionné store` / `1117661844127145`**, the portfolio that
+holds the verified domain.
+
+**1. Facebook Page** — Accounts → Pages → Add → Create a new Page
+- Name: `The Cravings Note` (matches `thecravingsnote.com`; a mismatched name is
+  a needless flag to a reviewer and to the buyer who sees it beside the ad)
+- Category: something neutral like `Website` or `Blog`. Avoid health/medical
+  categories — they invite scrutiny the content does not need.
+
+**2. Ad account** — Accounts → Ad accounts → Add → Create a new ad account
+- Currency: **USD — non-negotiable.** ClickBank pays USD and `ad_performance`
+  computes `profit` as a raw `revenue - spend` with no FX anywhere. A non-USD
+  account silently produces wrong profit, ROI and CPA that still look plausible.
+- Time zone: **UTC.** The views bucket days with `date()` in UTC; matching
+  removes the one-day boundary drift documented on `ad_performance`.
+- Do NOT reuse `124463681691678`. It is personal, unbilled, and Meta refuses to
+  claim it. It also holds a draft **Traffic** campaign that should not be used.
+
+**3. Dataset** — Data Sources → Datasets & pixels → Create
+- This produces the Pixel/Dataset ID that ClickBank's Meta integration needs.
+- Generate its access token, then put both into ClickBank →
+  Integrations → Postback/Pixels → **Facebook Pixel** template.
+- Remember the single-path rule: ClickBank's CAPI is ON, `lib/capi.ts` stays OFF
+  (`META_PIXEL_ID` unset). Two paths = double-counted Purchases.
+
+**4. First campaign** — when creative exists
+- Objective: **Sales**, not Traffic. Optimise for the **Purchase** event that
+  ClickBank's CAPI feeds back. Traffic optimises for link clicks, which is the
+  exact failure mode this whole stack exists to correct.
+- Destination: `https://thecravingsnote.com/api/c?s=meta&lp=default&c={{campaign.id}}&as={{adset.id}}&ad={{ad.id}}&pl={{placement}}`
+- Turn on URL auto-tagging so Meta appends `fbclid`; `/api/c` stores it and
+  `/api/go` forwards it, which is what ClickBank's CAPI matches on.
+
 ## Meta setup, done and not-done (2026-09-01)
 
 **Domain verified in `Sélectionné store`** (`1117661844127145`), asset
