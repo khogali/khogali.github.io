@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
-import { db, missingConfig } from '../lib/db';
-import { sendConversion } from '../lib/capi';
+import { db, missingConfig } from '../lib/db.js';
+import { sendConversion } from '../lib/capi.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

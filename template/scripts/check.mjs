@@ -136,6 +136,12 @@ for (const f of ['api/c.ts','api/go.ts','api/pb.ts']) {
   const src = read(f);
   assert.ok(src.includes('missingConfig()'), `${f} must guard on config`);
   assert.ok(!/(?<![\w)])db\s*\.from\(/.test(src), `${f} still uses the old eager db.from`);
+  // ESM needs explicit extensions on relative imports. Without them the deployed
+  // function dies with ERR_MODULE_NOT_FOUND at load — before any handler runs,
+  // so it reads as a config problem rather than a build problem.
+  for (const m of src.matchAll(/from '(\.\.?\/[^']+)'/g)) {
+    assert.ok(m[1].endsWith('.js'), `${f}: relative import ${m[1]} needs a .js extension`);
+  }
 }
 
 console.log(`ok — ${keys.length} data-v slots, variant b overrides ${bKeys.join(', ')}, ` +

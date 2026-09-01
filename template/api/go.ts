@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { db, missingConfig } from '../lib/db';
-import { resolveOffer, offerUrlWithSubId } from '../lib/offers';
+import { db, missingConfig } from '../lib/db.js';
+import { resolveOffer, offerUrlWithSubId } from '../lib/offers.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

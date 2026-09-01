@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { db, missingConfig } from '../lib/db';
-import { resolveOffer } from '../lib/offers';
+import { db, missingConfig } from '../lib/db.js';
+import { resolveOffer } from '../lib/offers.js';
 
 const SLUG = /^[a-z0-9-]{1,32}$/;
 
