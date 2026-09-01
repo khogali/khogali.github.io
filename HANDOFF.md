@@ -118,6 +118,8 @@ scalar subqueries, so it is the likelier half to need a fix on first run.
 | Live URL | `https://adstack-three.vercel.app` — `/lp/default` returns **200** |
 | Burner domain | **`thecravingsnote.com`** — bought, attached to Production, apex only (www redirect deliberately OFF) |
 | Offer | **Purisaki Berberine Patches** (confirmed 2026-09-01) |
+| ClickBank | nickname **`ashilkawi`** (also owns `a7medkhoga`); vendor `otppurisak` |
+| **BLOCKER** | **Hoplinks return `errCode=accntstate`. No sale can be credited. See below.** |
 
 **The SQL is no longer unverified.** Seeded synthetic data and every verdict was
 correct: `ad-cut` 200 clicks/$300/0 conv -> CUT; `ad-scale` 150/$200/5 conv ->
@@ -160,7 +162,52 @@ domains to www" checkbox is ON by default and was deliberately unchecked, becaus
 a www redirect adds a hop on paid traffic and breaks the `fb.1.` subdomain index
 in `lib/capi.ts` if that path is ever re-enabled.
 
-**Purisaki hoplink shape, confirmed from ClickBank's own dialog:**
+## BLOCKER: ClickBank hoplinks do not track (found 2026-09-01)
+
+Both of his account nicknames return `errCode=accntstate` on a hop:
+
+| Nickname | Hop result |
+|---|---|
+| `zzqxnotarl` (control, fake) | `errCode=invalidnickname` |
+| `a7medkhoga` (his, 2020) | `errCode=accntstate` |
+| `ashilkawi` (his, 2022) | `errCode=accntstate` |
+
+The control proves the distinction is real: a nonexistent nickname errors
+differently. `accntstate` means the nicknames exist but ClickBank refuses to
+issue a **tracked** hop. **The visitor still lands on the Purisaki page**, so
+this fails silently — he would buy traffic, watch it arrive, see zero
+conversions, and blame the creative.
+
+This is exactly question 5 of his own `adstack-offer` skill, the place a plan
+dies quietly. **Do not spend a dollar until this clears.**
+
+`accntstate` is not documented publicly (searched; nothing). ClickBank support
+is the path. Likely candidates are incomplete payment/tax setup or a dormant
+account, but that is inference, not confirmed.
+
+Verify the fix with:
+
+```bash
+curl -sk -L -o /dev/null -w '%{url_effective}\n' \
+  https://ashilkawi.otppurisak.hop.clickbank.net/
+```
+
+Green when the final URL is on `buy-purisaki.com` with no `errCode`.
+
+## API key hygiene
+
+He pasted a live ClickBank API key into chat on 2026-09-01. It is named
+`CL Assistant` and, per the API Management screen, is **Active with full
+permissions on both accounts**: Analytics, Products, Orders Read, **Orders
+Read/Write**, and **Subscription Modification**. That is write access to orders
+and subscriptions, not just reporting.
+
+**Rotate it**, and scope the replacement to Analytics + Orders Read only, which
+is all the reconciliation job would ever need. Claude declined to use or store
+it; the repo was scanned and contains no secrets in the working tree or in any
+commit.
+
+**Purisaki hoplink shape, confirmed from inside the account:**
 
 ```
 https://<AFFILIATE_NICKNAME>.otppurisak.hop.clickbank.net/
