@@ -361,8 +361,17 @@ select
   -- dropped outright; now they land here, and a non-zero count means the
   -- sub-ID macro is wrong on the network side.
   (select count(*) from conversions where sub_id is not null and click_id is null) as unmatched_postbacks,
+  -- Only a genuine delivery failure: we attempted, got a response back, and it
+  -- was neither a success nor a deliberate skip. Counting every unsent event
+  -- made this fire permanently whenever ClickBank's native CAPI is used instead
+  -- of lib/capi.ts, which is the recommended setup — and a permanent alarm in
+  -- `plumbing` hides the real checks underneath it. Found by running the views
+  -- against seeded data, not by reading them.
   (select count(*) from conversions
-     where click_id is not null and not capi_sent)                              as capi_undelivered,
+     where click_id is not null
+       and not capi_sent
+       and capi_response is not null
+       and not (capi_response ? 'skipped'))                                     as capi_undelivered,
   (select coalesce(sum(payout), 0) from conversions where status = 'pending')   as revenue_pending,
   (select coalesce(sum(payout), 0) from conversions where status = 'reversed')  as revenue_reversed;
 
