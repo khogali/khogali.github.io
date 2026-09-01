@@ -586,6 +586,39 @@ Per burner domain, two slow steps to do at purchase time, not at launch:
 - TikTok/Google/Snap/Reddit/Pinterest conversion adapters — only Meta is built
 - The daily optimiser — deliberately not built, needs live data first
 
+## END-TO-END VERIFIED LIVE 2026-09-01
+
+Every link in the chain except the postback itself has been exercised against
+production and passed:
+
+| Check | Result |
+|---|---|
+| `/api/pb` with no key | **403 forbidden** (was 503) — `POSTBACK_SECRET` is live |
+| `/api/pb` with a wrong key | **403** — constant-time compare rejects |
+| `/api/c` | 302 to `/lp/default?v=a&cid=<uuid>`, cookie set |
+| `clicks` row | `offer=purisaki` (host map worked), `fbclid`, `ad_id`, `campaign_id`, `adset_id`, `placement`, `country=US` all captured |
+| `/api/go` | redirects with `cbpage=lp1`, `aff_sub1=<real click_id>`, `traffic_source`, `traffic_type`, `fbclid` |
+| The hop | lands on `buy-purisaki.com/article/purisaki-wl-scientific-discovery-aff` — **correct product**, `aff_sub1` intact on the final URL, ClickBank issued a `hopId` |
+| `clicked_out` | flipped true with a timestamp |
+| `tracker_health` | `clickout_pct` 100, `unmatched_postbacks` 0, `capi_undelivered` 0 |
+| `adstack_status` | *"1 ad(s) still gathering data. Nothing to do today."* — correctly handles a click with no spend row, which validates the spine-union fix |
+
+**The one untested link is the postback**, because it needs the secret. Smoke row
+`7ff40da7-26d2-455a-93dc-2c76822e2fef` is left in `clicks` for that test. Run:
+
+```bash
+curl -s "https://thecravingsnote.com/api/pb?subid=7ff40da7-26d2-455a-93dc-2c76822e2fef&payout=57.35&txn=smoke-1&network=clickbank&k=YOUR_SECRET"
+```
+
+Expect `OK`. Re-run it and expect `OK duplicate`. Then check
+`conversions.click_id` is non-null and `tracker_health.unmatched_postbacks` is 0.
+Delete the smoke rows afterwards:
+
+```sql
+delete from conversions where sub_id = '7ff40da7-26d2-455a-93dc-2c76822e2fef';
+delete from clicks where ad_id = 'SMOKE-AD';
+```
+
 ## LAUNCH CHECKLIST — everything left, in order
 
 Everything Claude can do without credentials is done. What remains needs
