@@ -613,7 +613,12 @@ then-current price, charged to the card on file, tax added at charge time.
 
 ## config is set to Purisaki, live
 
-`target_payout = 57.35`, `target_cvr = 0.0352`, so **break-even CPC = $2.02**.
+`target_payout = 57.35`, `target_cvr = 0.007`, so **break-even CPC = $0.40**.
+
+> **Superseded 2026-09-01.** This section originally read `target_cvr = 0.0352` /
+> break-even $2.02. That was the vendor-page rate, not per-ad-click, and
+> overstated break-even 5x. See "target_cvr was wrong by 5x" below. The
+> $201.87 tension paragraph that follows was computed on the old number.
 
 **Known tension, his call:** `min_clicks_to_judge = 100` at $2.02 means **$201.87
 of spend per ad before any CUT verdict is allowed**. Against a ~$2k budget that
