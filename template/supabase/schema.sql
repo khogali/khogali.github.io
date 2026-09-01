@@ -152,13 +152,20 @@ alter table decisions    enable row level security;
 -- spend_daily would drop that revenue from the report entirely, making the ad
 -- look like a loser on the exact evidence that proves it is a winner.
 --
--- Ceiling: date() buckets in the database timezone (UTC on Supabase) while ad
--- platforms report in the ad account timezone. Days near the boundary can be
--- off by one. Set the ad account to UTC, or accept the drift.
+-- Days are bucketed in the AD ACCOUNT's timezone, not UTC. spend_daily.day
+-- arrives from the network already in that timezone; clicks and conversions
+-- are timestamptz, so they must be shifted to match or a click at 6pm Pacific
+-- lands on tomorrow's row while its spend lands on today's.
+--
+-- ponytail: one knob, one place. Meta locks an ad account's timezone after the
+-- first spend, so this follows the account rather than the other way round.
 -- ============================================================
+create or replace function report_tz() returns text
+  language sql immutable parallel safe as $$ select 'America/Los_Angeles' $$;
+
 create or replace view ad_performance as
 with clk as (
-  select ad_id, source, date(ts) as day,
+  select ad_id, source, date(ts at time zone report_tz()) as day,
          count(*) as tracked_clicks,
          max(offer) as offer
   from clicks
@@ -166,7 +173,7 @@ with clk as (
   group by 1, 2, 3
 ),
 conv as (
-  select cl.ad_id, cl.source, date(cv.ts) as day,
+  select cl.ad_id, cl.source, date(cv.ts at time zone report_tz()) as day,
          count(*)       as conversions,
          sum(cv.payout) as revenue
   from conversions cv
@@ -270,7 +277,7 @@ w as (
     sum(p.conversions)         as conversions,
     sum(p.revenue)             as revenue
   from ad_performance p, cfg
-  where p.day > current_date - cfg.window_days::int
+  where p.day > (now() at time zone report_tz())::date - cfg.window_days::int
   group by p.ad_id, p.source
 ),
 m as (
