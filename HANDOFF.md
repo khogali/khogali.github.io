@@ -766,18 +766,52 @@ Vercel cron runs it daily at `0 8 * * *` (08:00 UTC — just after midnight
 Pacific, so the previous day is closed in the ad account's own timezone).
 Manual run: `GET /api/spend?days=3&k=CRON_SECRET`.
 
-**Env vars Ahmed must set (Vercel → Settings → Environment Variables):**
+**Env var state (Vercel → Settings → Environment Variables):**
 
-| Var | Type | Value |
+| Var | Type | State |
 |---|---|---|
-| `CRON_SECRET` | Secret | `openssl rand -hex 24`. Never paste into a chat |
-| `META_ADS_TOKEN` | Secret | Meta token with `ads_read` on the ad account |
-| `META_AD_ACCOUNT_ID` | Config | `3975035259299444` |
+| `CRON_SECRET` | Secret | **SET** by Ahmed 2026-09-01 |
+| `META_AD_ACCOUNT_ID` | Config | **SET** by Claude 2026-09-01 = `3975035259299444` |
+| `META_ADS_TOKEN` | Secret | **STILL MISSING — blocked, see below** |
 
-For `META_ADS_TOKEN`, prefer a **System User** token over a personal one — it
-does not expire when Ahmed changes his password or loses a session:
-Business Settings → Users → System users → Add → assign the ad account with
-**View performance** → Generate new token → scope `ads_read` only.
+Verified after redeploy: `/api/spend` with a wrong key now returns **403**, where
+it returned 503 before. That proves `CRON_SECRET` is wired and the constant-time
+comparison runs. The secret gate is checked *before* the token, so 403 is the
+correct response even with the token still absent.
+
+### Which system user to use, and why NOT the CAPI one
+
+The business has two system users:
+
+- **Conversions API System User** (`61594077837639`, Employee) — holds the
+  Conversions API Application, the Pixel, and the Dataset. **No ad account.**
+- **tcn_kho** (`61593965762611`, Admin) — was empty; Claude assigned it
+  **The Cravings Note ad account with `View performance` only** on 2026-09-01.
+
+**Do not reuse the Conversions API System User for spend.** Its token is the one
+pasted into ClickBank, so a third party already holds that identity. Extending it
+to read ads data would mean one leak exposes both conversion writing and ads
+data, and rotating it after any ClickBank incident would silently break the spend
+ingest at the same moment. `tcn_kho` keeps the two blast radii separate.
+
+### BLOCKER: no Meta app in the portfolio
+
+`Generate token` is greyed out on `tcn_kho`, and on the CAPI user too. Business
+Settings → Accounts → **Apps** shows **"No apps added"**. A system-user token must
+be issued against a Meta app, and the Conversions API Application is Meta's own
+auto-provisioned internal app, not a portfolio app that can mint tokens.
+
+**Ahmed only** (app creation needs a developer account, which Claude must not create):
+
+1. `developers.facebook.com` → My Apps → Create App → type **Business**
+2. Business Settings → Accounts → **Apps** → **Add** → select that app
+3. Business Settings → Users → System users → **tcn_kho** → **Generate token**
+   → pick the app → tick **`ads_read` ONLY** → copy
+4. Vercel → Environment Variables → Add → **Secret** → `META_ADS_TOKEN` → paste
+5. **Redeploy** (Vercel does not apply new env vars to existing deployments)
+
+Then smoke-test: `curl -s "https://thecravingsnote.com/api/spend?days=3&k=CRON_SECRET"`
+Expect `{"ok":true,"days":3,"rows":0,"note":"no spend in window"}` until ads run.
 
 Until `CRON_SECRET` is set the endpoint returns **503 not configured**, which is
 deliberate: an unset secret must never mean "skip the check". Anyone who could
