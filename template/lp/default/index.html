@@ -3,71 +3,102 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Landing Page</title>
+<title>Why Afternoon Cravings Hit Hardest After 45</title>
 <meta name="robots" content="noindex,nofollow">
-<!-- Everything inline. Zero external requests = sub-0.5s render on cold mobile. -->
+<!-- Everything inline. Zero external requests = sub-0.5s render on cold mobile.
+     75% of this offer's traffic is mobile, so this is the whole performance budget. -->
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#111;background:#fff}
-.wrap{max-width:640px;margin:0 auto;padding:24px 20px 64px}
-h1{font-size:29px;line-height:1.25;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
-h2{font-size:20px;font-weight:700;margin:28px 0 10px}
-p{margin-bottom:16px;font-size:17px}
-.kicker{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#b45309;background:#fef3c7;padding:5px 10px;border-radius:4px;margin-bottom:16px}
-.cta{display:block;width:100%;text-align:center;background:#16a34a;color:#fff;font-size:19px;font-weight:700;padding:17px 24px;border-radius:10px;text-decoration:none;margin:26px 0 10px;box-shadow:0 2px 0 #15803d}
+body{font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1a1a1a;background:#fff}
+.wrap{max-width:640px;margin:0 auto;padding:20px 20px 64px}
+.brand{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#6b7280;padding-bottom:14px;border-bottom:1px solid #e5e7eb;margin-bottom:22px}
+h1{font-size:30px;line-height:1.2;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+h2{font-size:20px;font-weight:700;margin:30px 0 10px}
+p{margin-bottom:16px;font-size:17.5px}
+.kicker{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#92400e;background:#fef3c7;padding:5px 10px;border-radius:4px;margin-bottom:16px}
+.byline{font-size:14px;color:#6b7280;margin-bottom:24px}
+.cta{display:block;width:100%;text-align:center;background:#15803d;color:#fff;font-size:19px;font-weight:700;padding:18px 24px;border-radius:10px;text-decoration:none;margin:28px 0 10px;box-shadow:0 2px 0 #14532d}
 .cta:active{transform:translateY(1px);box-shadow:none}
-.sub{text-align:center;font-size:13px;color:#666;margin-bottom:26px}
-.proof{border-left:3px solid #16a34a;padding:12px 16px;background:#f0fdf4;margin:20px 0;font-size:16px}
-ul{margin:0 0 18px 22px}li{margin-bottom:9px;font-size:17px}
-footer{border-top:1px solid #e5e5e5;margin-top:40px;padding-top:18px;font-size:12px;color:#888}
-footer a{color:#888}
+.sub{text-align:center;font-size:13px;color:#6b7280;margin-bottom:26px}
+.proof{border-left:3px solid #15803d;padding:14px 16px;background:#f0fdf4;margin:22px 0;font-size:16.5px}
+ul{margin:0 0 18px 22px}li{margin-bottom:10px;font-size:17.5px}
+footer{border-top:1px solid #e5e7eb;margin-top:40px;padding-top:18px;font-size:12.5px;color:#6b7280}
+footer a{color:#6b7280}
+footer p{font-size:12.5px;margin-bottom:10px}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <span class="kicker" data-v="kicker">Kicker text</span>
-  <h1 data-v="headline">Headline goes here — the single biggest lever on this page.</h1>
+  <div class="brand">The Cravings Note</div>
 
-  <p data-v="lede">Opening paragraph. On paid traffic this either earns the next
-  scroll or loses the click you just paid for.</p>
+  <span class="kicker" data-v="kicker">Daily routine</span>
+  <h1 data-v="headline">Why afternoon cravings hit hardest after 45, and what actually changes it</h1>
 
-  <div class="proof" data-v="proof">Proof element — specific, concrete, checkable.</div>
+  <p class="byline" data-v="byline">A short read on appetite, routine, and the 3pm window.</p>
 
-  <h2 data-v="h2">Sub-headline</h2>
+  <p data-v="lede">If your willpower feels fine all morning and then collapses somewhere
+  between two and four in the afternoon, that is not a character problem. It is the most
+  common pattern people describe, and it has more to do with routine than resolve.</p>
+
+  <h2 data-v="h2">The part most advice skips</h2>
+
+  <p data-v="body1">Most guidance starts at the plate. Eat less of this, more of that. But the
+  people who describe the biggest change rarely talk about the food first. They talk about
+  the moment before it, the stretch of the afternoon where the decision gets made, and
+  about having something steady in place before that window opens.</p>
+
   <ul data-v="bullets">
-    <li>Benefit one</li>
-    <li>Benefit two</li>
-    <li>Benefit three</li>
+    <li>The afternoon window is predictable, which makes it plannable</li>
+    <li>A routine you can keep on a busy day beats one you keep on a good day</li>
+    <li>Consistency is the variable almost everyone underestimates</li>
   </ul>
 
-  <a class="cta" id="cta" href="/api/go" data-v="cta">Continue →</a>
-  <div class="sub" data-v="ctasub">Takes about 60 seconds</div>
+  <div class="proof" data-v="proof">The pattern is common enough that most people recognise
+  it immediately once it is named. Recognising it is the part that makes it addressable.</div>
+
+  <p data-v="body2">There is a plant-derived approach that has been studied in
+  weight-management contexts and has been getting attention recently for how simply it fits
+  into a daily routine. The write-up below explains the mechanism and where the research
+  currently stands, in plain language.</p>
+
+  <a class="cta" id="cta" href="/api/go" data-v="cta">Read the full explanation &rarr;</a>
+  <div class="sub" data-v="ctasub">Takes about three minutes</div>
 
   <footer>
-    <p>Advertising disclosure: we may be compensated if you take action through
-    links on this page.</p>
-    <p><a href="/privacy.html">Privacy</a> &middot; <a href="/terms.html">Terms</a></p>
+    <p><strong>Advertising disclosure:</strong> this page is advertising. We may be
+    compensated if you take action through links on this page. We are not the manufacturer
+    or seller of any product mentioned.</p>
+    <p>This page is for general information and is not medical advice. It has not been
+    evaluated by the FDA and nothing here is intended to diagnose, treat, cure or prevent
+    any disease. Individual experiences vary. Speak with your doctor before changing your
+    diet or starting any supplement, particularly if you take medication or have a medical
+    condition.</p>
+    <p><a href="/privacy">Privacy</a> &middot; <a href="/terms">Terms</a> &middot;
+    <a href="/">Home</a></p>
   </footer>
 </div>
 
 <script>
-// Variant copy. Defined here, inline, on purpose: an external variants.js would
-// add the network request this page exists to avoid. adstack-lp rewrites this
-// object per landing page. Every key must match a data-v attribute above; keys
-// left out fall through to the markup, so a variant can change one line.
+// Variant copy. Inline on purpose: an external file would add the network request
+// this page exists to avoid. Keys must match a data-v attribute above; anything
+// omitted falls through to the markup, so a variant can change one line.
 //
-// This used to be missing entirely — c.ts assigned a variant and logged it, the
-// swap silently no-opped, and both arms served identical HTML. The split test
-// recorded clean data proving that identical pages perform identically.
+// Both arms stay clear of numeric weight-loss claims, before/after framing and
+// institutional name-drops. This is the one surface we control and the only one
+// that is defensible in a policy review.
 window.VARIANTS = {
   a: {
-    // control — matches the markup above
+    // control — the routine/timing angle above
   },
   b: {
-    headline: 'Second angle goes here. Change the promise, not the wording.',
-    lede: 'A variant that only reworks the same claim tests nothing. Move the angle.',
-    cta: 'Show me how &rarr;'
+    kicker: 'Reader question',
+    headline: 'The 3pm question almost everyone over 45 asks eventually',
+    byline: 'One reader’s question, and the pattern behind it.',
+    lede: '“I am fine until mid-afternoon. Then I am not.” It is the single most common '
+        + 'message we get, phrased almost identically every time. Here is what is actually '
+        + 'going on in that window.',
+    cta: 'See what changed it &rarr;'
   }
 };
 </script>
