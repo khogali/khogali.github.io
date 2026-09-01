@@ -115,7 +115,10 @@ scalar subqueries, so it is the likelier half to need a fix on first run.
 | Schema | **Applied and verified.** 35 statements, migration `adstack_initial_schema` |
 | Vercel team | `team_b2Q2wZtXXXRROzcSJWoKtJcF`, plan **pro** (upgraded 2026-09-01) |
 | Vercel project | `adstack` / `prj_FUpbBCIwOx843OtZbPkuaU9jp2Qo` / branch `adstack-main` / root `template` |
-| Live URL | `https://adstack-three.vercel.app` — `/lp/default` returns **200** |
+| Live URL | `https://thecravingsnote.com` — `/`, `/lp/default`, `/privacy`, `/terms` all 200 |
+| Meta portfolio | **Kho's Recs**, `business_id=1766809867805983` |
+| Meta domain | **`thecravingsnote.com` VERIFIED** 2026-09-01, asset id `1828613468136112` |
+| Meta ad account | `124463681691678` — exists but is **NOT in the portfolio** |
 | Burner domain | **`thecravingsnote.com`** — bought, attached to Production, apex only (www redirect deliberately OFF) |
 | Offer | **Purisaki Berberine Patches**, lander `cbpage=lp1`, on Meta (decided 2026-09-01) |
 | ClickBank | nickname **`shilkawia`** (new, hops cleanly). `ashilkawi` and `a7medkhoga` are dead — `accntstate`. Vendor `otppurisak` |
@@ -161,6 +164,46 @@ Four env vars remain, which Claude will not set because they are secrets:
 domains to www" checkbox is ON by default and was deliberately unchecked, because
 a www redirect adds a hop on paid traffic and breaks the `fb.1.` subdomain index
 in `lib/capi.ts` if that path is ever re-enabled.
+
+## Meta setup, done and not-done (2026-09-01)
+
+**Domain verified.** Portfolio `Kho's Recs` (`1766809867805983`), domain asset
+`1828613468136112`, verified by meta-tag. The tag lives in the `<head>` of
+`template/index.html` and **must stay there** — Meta re-checks, and the tag must
+be server-rendered, not JS-injected:
+
+```html
+<meta name="facebook-domain-verification" content="ri8twzv6n54hy8ozd48h6xqfsi4na4" />
+```
+
+Verification was only possible after two prerequisites that did not exist:
+a Business Portfolio (Ahmed created it), and a root page (`/` used to 404, so
+there was no `<head>` to put the tag in).
+
+**Still open on Meta, both needing Ahmed:**
+
+1. **Ad account `124463681691678` is not in the portfolio.** Claiming an ad
+   account into a business portfolio is **permanent — Meta does not allow
+   removing it afterwards**, so Claude did not do it. Settings -> Accounts ->
+   Ad accounts -> Add.
+2. **No dataset/pixel exists.** ClickBank's Conversions API integration needs a
+   Pixel/Dataset ID and an access token. Data Sources -> Datasets -> Create.
+   The token is a credential; Ahmed generates and pastes it into ClickBank.
+
+There is also an **unpublished draft campaign** in that ad account, "New Traffic
+Campaign with recommended settings". Claude did not touch it. **Its objective is
+wrong** — Traffic optimises for link clicks, which is the exact failure mode this
+whole stack exists to fix. It needs to be a Sales campaign optimising on the
+`Purchase` event that ClickBank's CAPI feeds back.
+
+## Pages that now exist (2026-09-01)
+
+`/` root (was 404, carries the Meta tag), `/privacy`, `/terms` (both were linked
+from the LP footer and both 404'd), and a real `lp/default` replacing the
+placeholder. The LP runs the cravings/timing angle matched to the domain and to
+the vendor's stated demographics, and deliberately avoids numeric weight-loss
+claims, before/after framing and institutional name-drops. Variant `b` swaps to
+a reader-question angle under the same discipline.
 
 ## accntstate: SOLVED 2026-09-01 by a new nickname
 
