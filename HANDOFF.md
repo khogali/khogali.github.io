@@ -1,6 +1,7 @@
 # HANDOFF — adstack (read first)
 
-**Updated:** 2026-08-31 · Tracker audited and repaired. Pick up here.
+**Updated:** 2026-09-01 · Tracker audited, repaired, and given a decision layer.
+Pick up here.
 
 ## Who / what
 
@@ -63,9 +64,41 @@ end to end. Thirteen defects, two of which lost money on the first paid click:
 - Plus RLS, dedupe for txn-less networks, CAPI 400 handling, CAPI fallback on
   ip/user-agent, token out of the query string.
 
-`npm run check` in `template/` now runs an assert suite plus `tsc --strict` and
-exits 0. **The SQL has never been executed against a real Postgres** — it is
-parse-verified only.
+**Decision layer added 2026-09-01** (commit `7d691bd`). `ad_performance` gave
+seven numbers and left the judging to him, which is the thing that makes him
+overthink. Three views now sit on top of it:
+
+- `adstack_status` — one row, one sentence. Spend, revenue, profit, ROI, counts
+  of ads needing action, a `plumbing` column that reads `ok` or names the fault,
+  and a `next_action` in plain English. This is the daily query.
+- `ad_decisions` — one row per ad over a trailing window with a verdict
+  (`CUT` / `SCALE` / `KEEP` / `WAIT`), the arithmetic behind it in `reason`, and
+  `cpc` against `breakeven_cpc`. Four verdicts, each mapping to exactly one
+  action. A fifth (`WATCH`) was designed and cut, because it shared an action
+  with `KEEP` and a distinction with no different action is what causes the
+  overthinking.
+- `tracker_health` — is the plumbing working. A healthy-looking $0 and a broken
+  tracker are indistinguishable, so this counts unmatched postbacks, undelivered
+  CAPI events, click-out rate, and pending vs reversed revenue.
+
+The README's kill guardrail is now enforced in SQL rather than promised in prose:
+`WAIT` is returned until an ad clears **both** `min_clicks_to_judge` and
+`min_spend_to_judge`. Nothing can be told to die on noise.
+
+Every threshold lives in a `config` table, not in a view. Change one with an
+`update config set value = ... where key = ...`, never by editing SQL.
+
+Nothing in this layer acts. It recommends. The optimiser is still deliberately
+unbuilt; when it exists it reads `ad_decisions` and writes `decisions`.
+
+`npm run check` in `template/` runs an assert suite plus `tsc --strict` and
+exits 0. It also guards config-key drift, because a typo'd key does not error in
+Postgres — it falls through to the `coalesce` default and the verdicts quietly
+use the wrong number.
+
+**The SQL has never been executed against a real Postgres.** It is parse-verified
+only, and the decision layer leans hard on `format()`, aggregate `filter` and
+scalar subqueries, so it is the likelier half to need a fix on first run.
 
 **Decided:**
 - Paid media buying, all major social + Google eventually, Meta first
@@ -92,6 +125,15 @@ parse-verified only.
 4. Fire one test postback and confirm a row lands in `conversions` with a
    non-null `click_id`. That is the step that proves the chain, and it is the
    step that was silently broken.
+5. The moment an offer is picked, set the two numbers every verdict leans on:
+
+   ```sql
+   update config set value = <payout> where key = 'target_payout';
+   update config set value = <cvr>    where key = 'target_cvr';
+   ```
+
+   They produce `breakeven_cpc`. Left at the $75 / 2.5% defaults they will judge
+   a different offer than the one being run.
 
 ## Money reality (tell him honestly if it comes up)
 
@@ -113,3 +155,12 @@ break-even CPC = payout × conversion rate
 Get the ClickBank performance-e-commerce marketplace rows, run `adstack-offer`
 math on the top candidates, pick one, build the LP. The tracker is no longer the
 blocker.
+
+Once live, the daily loop is one query. Do not read raw tables:
+
+```sql
+select * from adstack_status;
+```
+
+Only drill into `ad_decisions` when it says an ad needs action, and only into
+`tracker_health` when `plumbing` is not `ok`.
