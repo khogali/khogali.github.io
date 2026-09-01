@@ -761,6 +761,38 @@ Postback URL for step 6:
 https://thecravingsnote.com/api/pb?subid={aff_sub1}&payout={affiliate_earnings}&txn={receipt_id}&k=YOUR_SECRET
 ```
 
+## ClickBank Meta CAPI integration — staged, NOT saved
+
+Integrations -> Postback/Pixels -> Add Integration -> **Facebook Pixel**.
+ClickBank refuses to save without the access token (*"Access token is
+required"*), so unlike the postback this one could not be persisted half-done.
+Re-enter if the page was lost:
+
+| Field | Value |
+|---|---|
+| Integration Name | `adstack meta capi` |
+| Account | `shilkawia` |
+| Role Type | Affiliate |
+| Pixel ID | `1842250187139415` |
+| Access Token | **Ahmed only** — Events Manager -> dataset -> Set up Conversions API |
+| Event Source URL | `https://thecravingsnote.com` |
+| Integration Level | Global |
+| Event Types | **Initial Order Form Impression, Initial Purchase** |
+
+**Event types deliberately differ from the postback integration, and the reason
+matters:**
+
+- The **postback** includes **Upsell Purchase**, because upsells are real
+  commission and excluding them understates ROI.
+- This **CAPI** integration **excludes Upsell Purchase**. An upsell would fire a
+  second `Purchase` to Meta for the same buyer, inflating Meta's conversion
+  count and deflating its CPA, so Meta would over-value the traffic and bid up.
+  One `Purchase` per buyer is what its model expects. Upsell revenue still
+  reaches `ad_decisions` through the postback, which is where it belongs.
+- **Initial Order Form Impression** is included here (maps to
+  `InitiateCheckout`) purely as upper-funnel signal for Meta. It is excluded
+  from the postback, where it would write phantom $0 conversion rows.
+
 ## ClickBank postback integration — built, inactive
 
 Integrations -> Postback/Pixels -> `adstack`. Configured:
