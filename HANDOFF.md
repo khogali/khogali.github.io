@@ -165,8 +165,11 @@ Two lessons worth keeping:
   reads like a config problem. **Read the Vercel runtime logs, do not infer.**
   `get_runtime_logs` gave the answer in one call after an hour of wrong guesses.
 
-**Current state, verified live:** `/api/c`, `/api/go` and `/api/pb` all return
-`503 not configured`. The handlers run; only the env vars are missing. When one
+**Current state, verified live 2026-09-01:** `/api/c`, `/api/go` and `/api/pb`
+all return `503 not configured`, and the Vercel log now names
+**`SUPABASE_SERVICE_KEY is not set`** — it previously said `SUPABASE_URL`. That
+change is the proof that `SUPABASE_URL` and `OFFERS` took: the guard checks in
+order and has advanced past them. Two secrets remain. When one
 route lags behind the others, check the `dep=` in the log — a stale function
 from the previous deployment serves for a short window after a deploy.
 
@@ -594,7 +597,9 @@ Ahmed's secrets, his legal agreement, or his money. In dependency order:
 | 2 | Create a **Dataset** | Meta -> Data Sources -> Datasets | ClickBank CAPI needs a Pixel/Dataset ID |
 | 3 | Generate a CAPI **access token** | Meta, on that dataset | Credential. Ahmed only |
 | 4 | Paste Pixel ID + token into ClickBank | ClickBank -> Integrations -> Meta | Turns on server-side Purchase events |
-| 5 | Set 4 env vars in Vercel Production | `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `POSTBACK_SECRET`, `OFFERS` | `/api/*` returns 503 until then |
+| 5a | ~~`SUPABASE_URL` + `OFFERS`~~ | **DONE** 2026-09-01, set as Config type, Production | — |
+| 5b | `SUPABASE_SERVICE_KEY` | Vercel, type **Secret** | Service-role key, bypasses RLS. Ahmed only |
+| 5c | `POSTBACK_SECRET` | Vercel Secret + the same value in ClickBank | `openssl rand -hex 24`. Never paste it into a chat |
 | 6 | Set the ClickBank **postback** | ClickBank -> Integrations -> Postback/Pixels | Conversions never reach the database otherwise |
 | 7 | **Rotate the ClickBank API key** | ClickBank -> API Management | Pasted into chat; currently has Orders Read/Write + Subscription Modification |
 | 8 | Run the smoke test | `template/README.md` | Proves the exact link the audit found broken |
