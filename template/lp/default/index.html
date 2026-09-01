@@ -5,8 +5,26 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Why Afternoon Cravings Hit Hardest After 45</title>
 <meta name="robots" content="noindex,nofollow">
-<!-- Everything inline. Zero external requests = sub-0.5s render on cold mobile.
-     75% of this offer's traffic is mobile, so this is the whole performance budget. -->
+<!-- Everything inline EXCEPT the Meta pixel below. That one external request buys
+     the only browser-side signal Meta gets from this domain: without it Meta cannot
+     observe a landing page view at all, so it cannot optimise toward one, and its
+     only input is ClickBank's server-side Purchase firing on the vendor's domain.
+     Loaded async so it never blocks first paint. -->
+
+<!-- Meta pixel. PageView ONLY — never Purchase. ClickBank's server-side CAPI owns
+     Purchase; firing it here too would double-count every sale and teach Meta a CVR
+     twice the real one. See HANDOFF "single-path rule". -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','1842250187139415');
+fbq('track','PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1842250187139415&ev=PageView&noscript=1"/></noscript>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1a1a1a;background:#fff}

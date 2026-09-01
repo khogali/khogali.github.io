@@ -144,5 +144,18 @@ for (const f of ['api/c.ts','api/go.ts','api/pb.ts']) {
   }
 }
 
+// The single-path rule, enforced rather than documented. ClickBank's server-side
+// CAPI owns Purchase. A browser-side Purchase here would double-count every sale,
+// teach Meta a conversion rate twice the real one, and make it overbid on traffic
+// that is actually losing money — a failure that looks like success on the dashboard
+// until the ClickBank statement disagrees. PageView is the only event we may fire.
+const lp = read('lp/default/index.html');
+assert.ok(lp.includes("fbq('init'"), 'LP lost the Meta pixel — LPV optimisation goes blind without it');
+assert.ok(lp.includes("fbq('track','PageView')"), 'LP pixel must fire PageView');
+for (const bad of ['Purchase', 'InitiateCheckout', 'AddToCart', 'Lead']) {
+  assert.ok(!lp.includes(`fbq('track','${bad}')`),
+            `LP fires ${bad} — ClickBank's CAPI already owns conversion events`);
+}
+
 console.log(`ok — ${keys.length} data-v slots, variant b overrides ${bKeys.join(', ')}, ` +
-            `${seeded.size} config keys wired, offer resolver green`);
+            `${seeded.size} config keys wired, offer resolver green, pixel PageView-only`);
