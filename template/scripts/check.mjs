@@ -66,4 +66,16 @@ const bKeys = [...bBlock.matchAll(/^\s*([a-z0-9]+):/gm)].map(m => m[1]);
 assert.ok(bKeys.length > 0, 'variant b overrides nothing');
 for (const k of bKeys) assert.ok(keys.includes(k), `variant key "${k}" matches no data-v element`);
 
-console.log(`ok — ${keys.length} data-v slots, variant b overrides ${bKeys.join(', ')}`);
+// ---- 6. every config key a view reads must exist in the seed -------------
+// A typo'd key does not error in Postgres, it silently falls through to the
+// coalesce default, so the view keeps returning verdicts built on the wrong
+// number. This is the only place that mismatch is visible.
+const sql = read('supabase/schema.sql');
+const seeded = new Set([...sql.matchAll(/^\s*\('([a-z_]+)',\s*-?[\d.]+,/gm)].map(m => m[1]));
+const referenced = new Set([...sql.matchAll(/where key = '([a-z_]+)'/g)].map(m => m[1]));
+assert.ok(seeded.size > 0, 'config seed not found');
+for (const k of referenced) assert.ok(seeded.has(k), `view reads config key "${k}" that is never seeded`);
+for (const k of seeded) assert.ok(referenced.has(k), `config key "${k}" is seeded but no view reads it`);
+
+console.log(`ok — ${keys.length} data-v slots, variant b overrides ${bKeys.join(', ')}, ` +
+            `${seeded.size} config keys wired`);

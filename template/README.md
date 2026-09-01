@@ -74,18 +74,56 @@ rejected as a duplicate.
 
 ## Read the numbers
 
+Start here. One row, plain English, tells you what to do today:
+
 ```sql
-select * from ad_performance where day = current_date - 1 order by profit desc;
+select * from adstack_status;
 ```
 
-`ad_performance` joins spend (from the ad platform) against conversions (from your
-postbacks) and gives you true ROI, CPA and CVR per ad — the numbers Meta's own
-dashboard cannot show you, because it doesn't know about your conversions.
+Then the per-ad verdicts, worst first:
 
-Its day/ad spine is the union of spend, tracked clicks and conversions, so a
+```sql
+select ad_id, verdict, next_action, spend, revenue, roi_pct, cpc, breakeven_cpc, reason
+from ad_decisions order by priority, spend desc;
+```
+
+`ad_decisions` gives every ad one of four verdicts over a trailing window, and
+shows the arithmetic behind it so the call is checkable rather than trusted:
+
+| Verdict | Means | Action |
+|---|---|---|
+| `CUT` | Past both thresholds and losing, or zero conversions | Pause it |
+| `SCALE` | ROI at or above `scale_roi_pct` | Raise budget 20% |
+| `KEEP` | Inside the do-nothing band | Leave it |
+| `WAIT` | Below `min_clicks_to_judge` **or** `min_spend_to_judge` | Leave it |
+
+`WAIT` is the guardrail: no ad can be told to die until it has cleared both a
+click threshold and a spend threshold. Killing on 4 clicks and no conversion is
+killing on noise.
+
+Every threshold lives in the `config` table, not in the view:
+
+```sql
+update config set value = 150 where key = 'min_clicks_to_judge';
+```
+
+Set `target_payout` and `target_cvr` to your actual offer the moment you pick
+one. They produce `breakeven_cpc`, which is the number every verdict leans on.
+
+`tracker_health` answers the different question of whether the machinery works,
+since a healthy-looking $0 and a broken tracker look identical. `adstack_status`
+surfaces its verdict in one `plumbing` column, so you only read the detail when
+that column is not `ok`.
+
+`ad_performance` is still underneath all of it: the per-day fact table joining
+spend from the ad platform against conversions from your own postbacks. Its
+day/ad spine is the union of spend, tracked clicks and conversions, so a
 conversion that lands after an ad is paused still shows up. Days bucket in UTC
 while ad platforms report in the ad account timezone; set the account to UTC or
 accept a boundary drift of one day.
+
+Nothing in this layer acts. It recommends, and the optimiser that will read it
+stays unbuilt until there is live data to build it against.
 
 ## Not built yet
 
