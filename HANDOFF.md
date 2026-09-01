@@ -756,6 +756,74 @@ delete from conversions where sub_id = '7ff40da7-26d2-455a-93dc-2c76822e2fef';
 delete from clicks where ad_id = 'SMOKE-AD';
 ```
 
+## Spend ingest — BUILT 2026-09-01, needs two env vars
+
+`template/api/spend.ts`. Pulls Meta ad-level daily spend into `spend_daily`,
+which was the last hole in the funnel: without it `ad_performance.spend` stays 0,
+ROI/CPA/profit are uncomputable, and every ad sits at WAIT forever.
+
+Vercel cron runs it daily at `0 8 * * *` (08:00 UTC — just after midnight
+Pacific, so the previous day is closed in the ad account's own timezone).
+Manual run: `GET /api/spend?days=3&k=CRON_SECRET`.
+
+**Env vars Ahmed must set (Vercel → Settings → Environment Variables):**
+
+| Var | Type | Value |
+|---|---|---|
+| `CRON_SECRET` | Secret | `openssl rand -hex 24`. Never paste into a chat |
+| `META_ADS_TOKEN` | Secret | Meta token with `ads_read` on the ad account |
+| `META_AD_ACCOUNT_ID` | Config | `3975035259299444` |
+
+For `META_ADS_TOKEN`, prefer a **System User** token over a personal one — it
+does not expire when Ahmed changes his password or loses a session:
+Business Settings → Users → System users → Add → assign the ad account with
+**View performance** → Generate new token → scope `ads_read` only.
+
+Until `CRON_SECRET` is set the endpoint returns **503 not configured**, which is
+deliberate: an unset secret must never mean "skip the check". Anyone who could
+POST to this endpoint could rewrite spend, and through it every CUT/SCALE verdict.
+
+**Decisions baked in, with reasons:**
+
+- **Pulls `inline_link_clicks`, never `clicks`.** Meta's `clicks` counts every
+  interaction — likes, comments, photo expands. Using it would make
+  `platform_clicks` tower over `tracked_clicks` and read as catastrophic
+  tracking loss when nothing is broken. Link clicks are the number actually
+  comparable to a hit on `/api/c`, which is what `ad_performance` sets them beside.
+- **Trailing 3-day re-pull, idempotent on `(day, source, ad_id)`.** Meta restates
+  recent days as attribution settles; re-running only corrects numbers.
+- **Meta's `date_start` is NOT converted.** It already arrives in the ad account
+  timezone — the same zone `report_tz()` shifts clicks and conversions into.
+  Converting it is precisely what would put spend and revenue on different rows.
+- **Refuses a non-USD account with 409.** `ad_performance` computes
+  `revenue - spend` with no FX anywhere and ClickBank always pays USD, so a
+  non-USD account would produce wrong profit that still looks plausible.
+
+`check.mjs` enforces the secret gate, the fail-closed branch, the link-click
+choice and the idempotent upsert — all four verified to fail when broken.
+
+## Meta pixel on the LP — ADDED 2026-09-01
+
+`template/lp/default/index.html` now loads the Meta pixel and fires **PageView
+only**. Before this, Meta had zero browser-side signal from our own domain; its
+only input was ClickBank's server-side Purchase firing on the *vendor's* domain.
+
+**Never add Purchase (or InitiateCheckout / AddToCart / Lead) here.** ClickBank's
+CAPI owns conversion events. Firing one browser-side too would double-count every
+sale and teach Meta a conversion rate twice the real one — it would overbid on
+traffic that is actually losing money, and the dashboard would look great until
+the ClickBank statement disagreed. `check.mjs` now fails the build on any of those
+four events appearing in the LP.
+
+Cost: one async request to `connect.facebook.net`, the LP's only external
+dependency. Page still renders in ~0.15s at 7.3KB.
+
+**Note:** the pixel does NOT unlock the Landing Page Views performance goal.
+That was tried twice, before and after installing it, and Meta rejects it with
+`#2490408` — the Sales objective does not accept LPV regardless of signal. LPV
+lives under the Traffic and Engagement objectives, and Traffic is ruled out.
+The campaign stays on **Purchase**.
+
 ## LAUNCH CHECKLIST — everything left, in order
 
 Everything Claude can do without credentials is done. What remains needs
