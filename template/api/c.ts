@@ -26,6 +26,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const ip =
     (req.headers['x-forwarded-for'] as string || '').split(',')[0].trim() || undefined;
 
+  const ua = (req.headers['user-agent'] as string) || '';
+
+  // Not a human. Two sources, both of which WILL hit this URL in normal operation:
+  //
+  //  1. Ad previews and Meta's review crawler fetch the destination with macros
+  //     left literal, so ad_id arrives as the string "{{ad.id}}".
+  //  2. facebookexternalhit and friends fetch the page for link previews.
+  //
+  // These were 179 of the first 208 rows in this table. Logging them inflates
+  // tracked_clicks, deflates CVR, and makes tracker_health scream "the landing
+  // page is the problem" at a landing page that is fine — while the real signal
+  // sits under a pile of bots. Redirect them anyway so previews still render;
+  // just refuse to count them.
+  const macroLiteral = Object.values(q).some(v => typeof v === 'string' && v.includes('{{'));
+  const isBot = /facebookexternalhit|meta-externalagent|bot|crawler|spider|preview/i.test(ua);
+  const countable = !macroLiteral && !isBot;
+
   // Whitelist, don't interpolate. `lp` lands inside the redirect path, so an
   // unchecked value like `?lp=/evil.com` yields `Location: //evil.com/` — an
   // open redirect on the domain you are actively buying traffic to, which is
@@ -41,7 +58,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // it will actually be sent to rather than one inferred later.
   const offer = resolveOffer(req.headers.host as string | undefined);
 
-  const { data, error } = await db()
+  let data: { click_id?: string } | null = null;
+  let error: unknown = null;
+  if (!countable) {
+    console.log('uncounted click', { macroLiteral, isBot, ad: q.ad });
+  } else {
+    ({ data, error } = await db()
     .from('clicks')
     .insert({
       offer:       offer?.name || null,
@@ -65,7 +87,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       referrer:    (req.headers['referer'] as string) || null,
     })
     .select('click_id')
-    .single();
+    .single());
+  }
 
   // Never block the funnel on a logging failure — you lose the click AND the money.
   if (error) console.error('click insert failed', error);

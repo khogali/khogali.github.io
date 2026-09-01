@@ -157,6 +157,15 @@ for (const bad of ['Purchase', 'InitiateCheckout', 'AddToCart', 'Lead']) {
             `LP fires ${bad} — ClickBank's CAPI already owns conversion events`);
 }
 
+// Preview/crawler filter. Meta fetches the destination URL with macros left
+// literal during review and preview, so ad_id arrives as "{{ad.id}}". Counting
+// those buries the real signal and fires false landing-page alarms.
+assert.ok(cSrc.includes("includes('{{')"), 'api/c.ts must reject unexpanded macro hits');
+assert.ok(/facebookexternalhit/.test(cSrc), 'api/c.ts must filter Meta crawler UAs');
+assert.ok(/if \(!countable\)/.test(cSrc), 'api/c.ts must skip the insert for uncountable hits');
+assert.ok(cSrc.indexOf('res.redirect') > cSrc.indexOf('countable'),
+          'uncountable hits must still redirect — previews have to render');
+
 // Spend ingest. The two mistakes that would look like data rather than bugs:
 // an open endpoint anyone can use to rewrite spend (and therefore every verdict),
 // and pulling Meta's `clicks` instead of `inline_link_clicks` — which counts
