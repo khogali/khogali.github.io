@@ -132,7 +132,7 @@ process.env.SUPABASE_SERVICE_KEY = 'k';
 assert.equal(missingConfig(), null, 'complete config must report no error');
 if (saved.u) process.env.SUPABASE_URL = saved.u; else delete process.env.SUPABASE_URL;
 if (saved.k) process.env.SUPABASE_SERVICE_KEY = saved.k; else delete process.env.SUPABASE_SERVICE_KEY;
-for (const f of ['api/c.ts','api/go.ts','api/pb.ts']) {
+for (const f of ['api/c.ts','api/go.ts','api/pb.ts','api/spend.ts']) {
   const src = read(f);
   assert.ok(src.includes('missingConfig()'), `${f} must guard on config`);
   assert.ok(!/(?<![\w)])db\s*\.from\(/.test(src), `${f} still uses the old eager db.from`);
@@ -157,5 +157,18 @@ for (const bad of ['Purchase', 'InitiateCheckout', 'AddToCart', 'Lead']) {
             `LP fires ${bad} — ClickBank's CAPI already owns conversion events`);
 }
 
+// Spend ingest. The two mistakes that would look like data rather than bugs:
+// an open endpoint anyone can use to rewrite spend (and therefore every verdict),
+// and pulling Meta's `clicks` instead of `inline_link_clicks` — which counts
+// likes and photo expands, towering over tracked_clicks and reading as tracking
+// loss when nothing is wrong.
+const spend = read('api/spend.ts');
+assert.ok(spend.includes('CRON_SECRET'), 'spend ingest must be secret-gated');
+assert.ok(/if \(!secret\)/.test(spend), 'spend ingest must fail closed on an unset secret');
+assert.ok(spend.includes('inline_link_clicks'), 'spend ingest must pull inline_link_clicks');
+assert.ok(!/fields:[^\n]*[^_]\bclicks\b(?!.*inline)/.test(spend.split('\n').find(l => l.includes('fields:')) ?? ''),
+          'spend ingest must not request bare `clicks`');
+assert.ok(spend.includes("onConflict: 'day,source,ad_id'"), 'spend upsert must be idempotent');
+
 console.log(`ok — ${keys.length} data-v slots, variant b overrides ${bKeys.join(', ')}, ` +
-            `${seeded.size} config keys wired, offer resolver green, pixel PageView-only`);
+            `${seeded.size} config keys wired, offer resolver green, pixel PageView-only, spend ingest guarded`);

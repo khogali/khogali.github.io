@@ -2,8 +2,20 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
-    { "source": "/(.*)", "headers": [
-      { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
-    ]}
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/spend?days=3",
+      "schedule": "0 8 * * *"
+    }
   ]
 }
