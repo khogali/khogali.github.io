@@ -177,7 +177,34 @@ stay broken and must not be used:
 Whatever `accntstate` is, it is per-nickname, not per-master-account. A fresh
 nickname routes around it. Not worth a support ticket now.
 
-## OPEN: the hoplink points at the WRONG PRODUCT
+## OPEN: vendor sent the WRONG PRODUCT link (2026-09-01)
+
+The vendor supplied encrypted hoplink
+`https://f8e86cuh-6qnl8db59skw239-e.hop.clickbank.net` **also lands on Nuubu**,
+same as the generic hoplink. Both product pages are live and distinct:
+
+| URL | `<title>` |
+|---|---|
+| `/nuubu/product` | *Limited Time Promo: 70% Off Detox Patches! \| Nuubu* |
+| `/purisaki-berberine/product` | *Limited Time Promo: 70% Off Purisaki Berberine!* |
+
+So this is not a rename or a dead product. The vendor handed over a Nuubu link.
+Go back to `rasa.neniske@orbio.world` / Telegram `@rasaorbio` with that exact
+link and ask for the Purisaki Berberine one.
+
+## COMPLIANCE RISK on the destination page
+
+The Purisaki page's own H1 is **"Lose 12+ lbs per Month Easily"**. That is a
+specific weight-loss amount and timeframe. Meta restricts exactly this, and it
+reviews destination pages, not just the ad and the landing page. A fully
+compliant LP on `thecravingsnote.com` does not protect him if the page he hands
+off to leads with that claim.
+
+This is the concrete version of the risk flagged when Purisaki was picked:
+weight-loss reintroduces the ad-account exposure that choosing e-commerce was
+meant to avoid. Worth deciding deliberately, not drifting into.
+
+## (superseded) the generic hoplink pointed at the wrong product
 
 `https://shilkawia.otppurisak.hop.clickbank.net/` lands on
 **`buy-purisaki.com/nuubu/product`** — Nuubu is a different Orbio product
