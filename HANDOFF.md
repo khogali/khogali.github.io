@@ -177,7 +177,75 @@ stay broken and must not be used:
 Whatever `accntstate` is, it is per-nickname, not per-master-account. A fresh
 nickname routes around it. Not worth a support ticket now.
 
-## OPEN: vendor sent the WRONG PRODUCT link (2026-09-01)
+## SOLVED: the hoplink works. It was a landing-page setting, not a bad link.
+
+ClickBank's link builder has a **Landing Page** dropdown. It defaults to
+`Default`, and for this offer `Default` routes to **Nuubu**, a different Orbio
+product. Nobody sent a wrong link; the link was built with `Default` selected.
+Pick a named lander and it routes correctly. The selector is `?cbpage=`:
+
+| `cbpage` | Destination |
+|---|---|
+| (none) / `Default` | `buy-purisaki.com/nuubu/product` — WRONG PRODUCT |
+| `lp1` | `article/purisaki-wl-scientific-discovery-aff` — correct |
+| `lp2` | `article/purisaki-wl-short-story-aff` — correct |
+| `lp3` | falls back to Nuubu (invalid id) |
+
+**`aff_sub1` survives the hop.** Verified: appending
+`&aff_sub1=<uuid>&traffic_source=meta&traffic_type=paid&fbclid=X` to the
+encrypted hoplink puts all four on the final URL. That is the proof adstack's
+`click_id` reaches ClickBank and can come back on the postback. `fbclid` passes
+too, which is what ClickBank's native Meta CAPI needs.
+
+Working base link for nickname `shilkawia`, Scientific Discovery lander:
+
+```
+https://b4802imbtdqkj90h8ixt32-vno.hop.clickbank.net/?cbpage=lp1
+```
+
+Regenerate from Marketplace -> Get Affiliate Link if the encrypted id rotates.
+`aff sub 1`..`5`, `tid`, `fbclid` and `extclid` are all togglable under
+Edit Parameters.
+
+## DECISION NEEDED: every Purisaki destination violates Meta policy
+
+Read all three destination pages. Every path carries hard weight-loss claims
+and fake-news framing:
+
+| Page | Headline | Claims found |
+|---|---|---|
+| Product page | *"Lose 12+ lbs per Month Easily"* | specific amount + timeframe |
+| `lp1` Scientific Discovery | *"JUST LEAKED: Harvard Scientist Accidentally Discovers an Ancient Green Molecule That Can Burn 3X More Fat..."* | "lost 27 pounds", "lost an average of 28 pounds" |
+| `lp2` Short Story | *"SKEPTICS STUNNED: How This Weird Skin Trick Erased 52 Pounds Without Giving Up Wine, Pizza, & Even Hitting the Gym"* | "Lost 28 pounds", "lost 12 pounds" |
+
+Meta's health and misleading-claims policies target exactly this: implied
+specific weight-loss outcomes, unrealistic results, and sensationalised
+"leaked/stunned" framing. The Harvard name-drop is a separate legal exposure —
+Harvard pursues trademark misuse in supplement advertorials.
+
+**Correction to an earlier recommendation in this file:** Scientific Discovery
+was suggested as the more conservative angle. Having read it, it is not. Both
+advertorials are equally aggressive and `lp2` is arguably worse.
+
+A compliant landing page on `thecravingsnote.com` does not fix this. Meta
+reviews destination pages, and he controls none of these.
+
+**The technical build is done and proven. The offer is the problem.** Options:
+
+1. **Run Purisaki on Native** (Taboola/Outbrain) instead of Meta. These
+   advertorials are built for native and policy there tolerates them. The vendor
+   says it scales on Native. Costs: higher minimums, and adstack has no native
+   adapter yet, and ClickBank's native CAPI is Meta-only.
+2. **Switch to Matsato Osuren knife** — same vendor, no approval, zero health
+   claims, Meta-safe. Break-even CPC only $0.75, which is tight but knives are a
+   strong visual/impulse product on Meta.
+3. **Run Purisaki on Meta anyway** — highest expected value on paper, and the
+   profile Meta restricts accounts for. A ban is identity-level.
+
+`thecravingsnote.com` was named for the cravings angle, so option 2 would need a
+second burner domain (~$11.25).
+
+## (superseded) the encrypted link looked like a vendor error
 
 The vendor supplied encrypted hoplink
 `https://f8e86cuh-6qnl8db59skw239-e.hop.clickbank.net` **also lands on Nuubu**,
