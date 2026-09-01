@@ -1,6 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { db } from '../lib/db';
 
+const SLUG = /^[a-z0-9-]{1,32}$/;
+
 /**
  * CLICK IN.  Ad destination URL points here.
  *
@@ -16,12 +18,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const ip =
     (req.headers['x-forwarded-for'] as string || '').split(',')[0].trim() || undefined;
 
-  const lpSlug = q.lp || 'default';
+  // Whitelist, don't interpolate. `lp` lands inside the redirect path, so an
+  // unchecked value like `?lp=/evil.com` yields `Location: //evil.com/` — an
+  // open redirect on the domain you are actively buying traffic to, which is
+  // how an ad domain gets flagged for abuse.
+  const lpSlug = SLUG.test(q.lp ?? '') ? q.lp : 'default';
 
-  // Deterministic-ish variant split. Weights come from env so the optimiser
-  // can shift traffic without a redeploy.
-  const variants = (process.env.LP_VARIANTS || 'a').split(',');
-  const variant = variants[Math.floor(Math.random() * variants.length)];
+  // Weights come from env so the optimiser can shift traffic without a redeploy.
+  const variants = (process.env.LP_VARIANTS || 'a').split(',')
+    .map(v => v.trim()).filter(v => SLUG.test(v));
+  const variant = variants[Math.floor(Math.random() * variants.length)] || 'a';
 
   const { data, error } = await db
     .from('clicks')
@@ -54,5 +60,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const clickId = data?.click_id ?? 'untracked';
   res.setHeader('Set-Cookie', `cid=${clickId}; Path=/; Max-Age=2592000; SameSite=Lax`);
   res.setHeader('Cache-Control', 'no-store');
-  res.redirect(302, `/${lpSlug}/?v=${variant}&cid=${clickId}`);
+  // Landing pages live in lp/, and Vercel serves this directory as-is — there is
+  // no public/ to flatten it. `/${slug}` would 404 every click you paid for.
+  // No trailing slash: vercel.json sets trailingSlash false, so one would 308.
+  res.redirect(302, `/lp/${lpSlug}?v=${variant}&cid=${clickId}`);
 }

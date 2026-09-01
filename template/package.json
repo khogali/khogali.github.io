@@ -8,5 +8,9 @@
   "devDependencies": {
     "@vercel/node": "^3.2.0",
     "typescript": "^5.5.0"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "check": "node scripts/check.mjs && tsc -p tsconfig.json"
   }
 }

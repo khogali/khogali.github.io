@@ -52,6 +52,26 @@ footer a{color:#888}
 </div>
 
 <script>
+// Variant copy. Defined here, inline, on purpose: an external variants.js would
+// add the network request this page exists to avoid. adstack-lp rewrites this
+// object per landing page. Every key must match a data-v attribute above; keys
+// left out fall through to the markup, so a variant can change one line.
+//
+// This used to be missing entirely — c.ts assigned a variant and logged it, the
+// swap silently no-opped, and both arms served identical HTML. The split test
+// recorded clean data proving that identical pages perform identically.
+window.VARIANTS = {
+  a: {
+    // control — matches the markup above
+  },
+  b: {
+    headline: 'Second angle goes here. Change the promise, not the wording.',
+    lede: 'A variant that only reworks the same claim tests nothing. Move the angle.',
+    cta: 'Show me how &rarr;'
+  }
+};
+</script>
+<script>
 // Carry click_id through to the outbound link so the network can post it back.
 (function(){
   var p = new URLSearchParams(location.search);
@@ -59,7 +79,6 @@ footer a{color:#888}
   var cta = document.getElementById('cta');
   if (cid) cta.href = '/api/go?cid=' + encodeURIComponent(cid);
 
-  // Variant copy swap. VARIANTS is emitted at build time per landing page.
   var v = p.get('v');
   if (v && window.VARIANTS && window.VARIANTS[v]) {
     var copy = window.VARIANTS[v];
