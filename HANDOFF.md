@@ -1,7 +1,7 @@
 # HANDOFF — adstack (read first)
 
-**Updated:** 2026-09-01 · Tracker audited, repaired, decision layer added, and
-ClickBank wiring confirmed against their live docs. Pick up here.
+**Updated:** 2026-09-01 · Database LIVE and verified. Offer confirmed: Purisaki.
+Pick up here.
 
 ## Who / what
 
@@ -107,6 +107,56 @@ scalar subqueries, so it is the likelier half to need a fix on first run.
   payout, 2–3% CVR claimed) over supplements — better break-even math, far lower
   ad-account risk, less saturated
 
+## LIVE INFRASTRUCTURE (2026-09-01)
+
+| Thing | Value |
+|---|---|
+| Supabase project | `adstack` / ref `xiodpbhapjitjqtuavwy` / us-east-1 / PG 17 / free, $0/mo |
+| Schema | **Applied and verified.** 35 statements, migration `adstack_initial_schema` |
+| Vercel team | `team_b2Q2wZtXXXRROzcSJWoKtJcF`, plan **pro** (upgraded 2026-09-01) |
+| Vercel project | **NOT created.** MCP returns 403 on project creation, see below |
+| Burner domain | Not bought |
+| Offer | **Purisaki Berberine Patches** (confirmed 2026-09-01) |
+
+**The SQL is no longer unverified.** Seeded synthetic data and every verdict was
+correct: `ad-cut` 200 clicks/$300/0 conv -> CUT; `ad-scale` 150/$200/5 conv ->
+SCALE at 87.5% ROI; `ad-wait` 50 clicks -> WAIT "Needs 50 more clicks";
+`ad-keep` -> KEEP at 12.5%. `adstack_status` collapsed it to "Pause 1 ad(s).
+Start with ad-cut, it has burned $300.00." Test rows deleted, tables at 0.
+
+**Running it found a bug that reading it never did** (commit `d3271ad`).
+`tracker_health.capi_undelivered` counted every conversion with
+`capi_sent = false` as a failure. The chosen setup is ClickBank's native CAPI
+with `lib/capi.ts` off, which leaves that flag false forever, so `plumbing`
+would have read "N conversion(s) never reached Meta" permanently and masked the
+landing-page check underneath it. Now counts only genuine failures.
+
+Supabase security advisors: only INFO `rls_enabled_no_policy` on all five
+tables, which is the intended design. No errors, no warnings.
+
+**Vercel project creation is blocked on a permission, not the plan.** The team
+reads `pro`, but the MCP connection 403s on create (read and list work fine).
+It is an OAuth scope limit. Create it by hand with exactly these three settings:
+
+- Repo `khogali/khogali.github.io`
+- **Production branch `adstack-main`** (NOT the repo default, which is the
+  GitHub Pages site)
+- **Root directory `template`**
+
+Then four env vars, which Claude will not set because they are secrets:
+`SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `POSTBACK_SECRET`, `OFFERS`.
+
+## config is set to Purisaki, live
+
+`target_payout = 57.35`, `target_cvr = 0.0352`, so **break-even CPC = $2.02**.
+
+**Known tension, his call:** `min_clicks_to_judge = 100` at $2.02 means **$201.87
+of spend per ad before any CUT verdict is allowed**. Against a ~$2k budget that
+is roughly 10 ad tests total. Lowering it buys more tests but 100 clicks at
+3.52% CVR only expects 3.5 conversions, which is already statistically thin.
+`min_spend_to_judge = 75` never binds at this CPC — it is a floor for cheap
+traffic, not dead config (an earlier self-critique overstated that).
+
 ## Marketplace pulled 2026-09-01 — the gravity screen was wrong
 
 Read the full ClickBank physical catalogue (474 offers, sorted by gravity) in
@@ -138,10 +188,32 @@ The non-supplement physical universe is tiny — roughly 15 offers. Shortlist:
 His $1.88 working number was right by accident. Derila lands at $1.90, and its
 listed EPC of $1.91 confirms it independently.
 
-**Pick: Derila**, best economics in the whole physical catalogue. Blocked on
-approval, which is the step that already killed MaxBounty. **Fallback: Purisaki**,
-same economics, no approval gate, but it is a weight-loss patch and therefore
-carries the supplement ad-account risk he chose e-commerce to avoid.
+**CONFIRMED 2026-09-01: Purisaki.** Chosen over Derila because it needs no
+seller approval (start today) and its asset pack is far deeper. Derila remains
+the better pure economics at $1.90 break-even and stays the upgrade path if
+Orbio ever approves him.
+
+Purisaki asset pack (public Drive, actively maintained through `26w04` in Jan):
+human UGC from 6+ named creators organised by angle, Facebook-specific video
+cuts already edited, B-roll, photos, 3D/animations, three advertorials
+(Scientific Discovery / Short Story / quiz funnel), email swipes, a marketing
+instructions PDF and an angles/landers/guidelines PDF. Stated demographics:
+70% female, 44-65+, USA only, 75% mobile. Contact `rasa.neniske@orbio.world`
+or Telegram `@rasaorbio` for CPA terms — an upgrade, not a gate.
+
+**Eliminated by reading the terms, not the numbers:** Advanced Amino had the
+best CVR in the entire physical catalogue (4.55%, $2.33 EPC) and forbids
+Facebook ads outright.
+
+**Go in with eyes open.** This is weight-loss, which reintroduces the
+supplement-adjacent ad-account risk e-commerce was chosen to avoid. Meta bans
+before/after imagery and negative body-image framing, so their
+`25w44-Before After Home` and `25w49 UGC (transformation/progress)` folders are
+unusable as supplied. Their copy says "rapid fat burning" and "effortless" while
+the product page hedges with "has been studied in weight-management contexts" —
+running their advertorial inherits those claims, so use Scientific Discovery and
+cut the strongest ones. `26w02 - HeyGen testimonial` is an AI avatar; there is
+plenty of real human UGC, so that folder never needs touching.
 
 Derila, Purisaki and Matsato all come from one vendor (Orbio,
 `simona.jazdauskaite@orbio.world`). One approval conversation likely covers all.
