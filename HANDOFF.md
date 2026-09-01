@@ -600,7 +600,7 @@ Ahmed's secrets, his legal agreement, or his money. In dependency order:
 | 5a | ~~`SUPABASE_URL` + `OFFERS`~~ | **DONE** 2026-09-01, set as Config type, Production | — |
 | 5b | `SUPABASE_SERVICE_KEY` | Vercel, type **Secret** | Service-role key, bypasses RLS. Ahmed only |
 | 5c | `POSTBACK_SECRET` | Vercel Secret + the same value in ClickBank | `openssl rand -hex 24`. Never paste it into a chat |
-| 6 | Set the ClickBank **postback** | ClickBank -> Integrations -> Postback/Pixels | Conversions never reach the database otherwise |
+| 6 | ~~Build the ClickBank postback~~ | **DONE** 2026-09-01, saved as `adstack`, status **Inactive** | Needs the secret appended, then activate |
 | 7 | **Rotate the ClickBank API key** | ClickBank -> API Management | Pasted into chat; currently has Orders Read/Write + Subscription Modification |
 | 8 | Run the smoke test | `template/README.md` | Proves the exact link the audit found broken |
 | 9 | Change the draft campaign to **Sales**, optimising on `Purchase` | Meta Ads Manager | Traffic optimises for clicks, the failure mode this stack exists to fix |
@@ -618,6 +618,45 @@ Postback URL for step 6:
 ```
 https://thecravingsnote.com/api/pb?subid={aff_sub1}&payout={affiliate_earnings}&txn={receipt_id}&k=YOUR_SECRET
 ```
+
+## ClickBank postback integration — built, inactive
+
+Integrations -> Postback/Pixels -> `adstack`. Configured:
+
+| Field | Value |
+|---|---|
+| Account | `shilkawia` |
+| Role Type | Affiliate |
+| Tracking Type | S2S Postback |
+| Integration Level | Global (all offers) |
+| Event Types | **Initial Purchase, Upsell Purchase** |
+| Status | **Inactive** — activate after appending the secret |
+
+URL as saved, deliberately ending in a bare `k=`:
+
+```
+https://thecravingsnote.com/api/pb?subid={aff_sub1}&payout={affiliate_earnings}&txn={receipt_id}&network=clickbank&offer={vendor}&k=
+```
+
+Ahmed appends his `POSTBACK_SECRET` after `k=` and flips Status to Active.
+
+**Decisions baked into that config, with reasons:**
+
+- **Upsell Purchase is included.** Upsells are real commission. Excluding them
+  understates ROI enough to kill profitable ads. The cost is that
+  `ad_performance.cvr_pct` overstates conversion rate, because one buyer can
+  produce two conversion rows. Revenue, profit and ROI stay correct, and those
+  are what `ad_decisions` acts on. **Read `cvr_pct` as "conversion events per
+  click", not "buyers per click".**
+- **Order Form Impression and Add Payment Info are excluded.** Neither is a
+  sale; including them would write phantom `$0` conversion rows and wreck CPA.
+- **`{currency}` is deliberately NOT mapped.** ClickBank documents
+  `{affiliate_earnings}` as always in USD while `{currency}` is what the
+  customer paid in. Mapping it would mislabel a USD payout as EUR/GBP and
+  corrupt every revenue sum.
+- `{vendor}` -> `offer_id` so rows are attributable to the seller account.
+- `network=clickbank` is hardcoded because `NETWORK_NAME` is unset, and the
+  dedupe index is on `(network, network_txn_id)` — it must be stable.
 
 ## Still deliberately NOT built
 
