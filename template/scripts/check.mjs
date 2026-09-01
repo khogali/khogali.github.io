@@ -149,12 +149,22 @@ for (const f of ['api/c.ts','api/go.ts','api/pb.ts','api/spend.ts']) {
 // teach Meta a conversion rate twice the real one, and make it overbid on traffic
 // that is actually losing money — a failure that looks like success on the dashboard
 // until the ClickBank statement disagrees. PageView is the only event we may fire.
-const lp = read('lp/default/index.html');
-assert.ok(lp.includes("fbq('init'"), 'LP lost the Meta pixel — LPV optimisation goes blind without it');
-assert.ok(lp.includes("fbq('track','PageView')"), 'LP pixel must fire PageView');
-for (const bad of ['Purchase', 'InitiateCheckout', 'AddToCart', 'Lead']) {
-  assert.ok(!lp.includes(`fbq('track','${bad}')`),
-            `LP fires ${bad} — ClickBank's CAPI already owns conversion events`);
+// Every landing page, not just the default — a new LP that forgets the pixel goes
+// blind, and one that fires Purchase double-counts every sale.
+import { readdirSync } from 'node:fs';
+const lpDirs = readdirSync(new URL('../lp', import.meta.url), { withFileTypes: true })
+  .filter(d => d.isDirectory()).map(d => d.name);
+assert.ok(lpDirs.length > 0, 'no landing pages found');
+for (const dir of lpDirs) {
+  const lp = read(`lp/${dir}/index.html`);
+  assert.ok(lp.includes("fbq('init'"), `lp/${dir} lost the Meta pixel`);
+  assert.ok(lp.includes("fbq('track','PageView')"), `lp/${dir} pixel must fire PageView`);
+  for (const bad of ['Purchase', 'InitiateCheckout', 'AddToCart', 'Lead']) {
+    assert.ok(!lp.includes(`fbq('track','${bad}')`),
+              `lp/${dir} fires ${bad} — ClickBank's CAPI already owns conversion events`);
+  }
+  assert.ok(lp.includes('id="cta"'), `lp/${dir} has no #cta — click-out would not carry cid`);
+  assert.ok(lp.includes("'/api/go?cid='"), `lp/${dir} does not carry cid to /api/go`);
 }
 
 // Preview/crawler filter. Meta fetches the destination URL with macros left
