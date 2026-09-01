@@ -59,18 +59,108 @@ https://YOURDOMAIN/api/c?s=meta&lp=default
 `lp` must be lowercase letters, digits and hyphens, and must match a directory
 under `lp/`. Anything else falls back to `default`.
 
-## Wire up the network
+Meta appends `fbclid` itself when auto-tagging is on. `/api/c` stores it, and
+it is what any Conversions API attribution depends on.
 
-Postback URL to paste into your affiliate network:
+## Wire up the offer (ClickBank)
+
+Put the click_id in `aff_sub1`, not `tid`. ClickBank's newer affiliate tracking
+parameters allow 100 characters including hyphens, so a 36-character UUID fits.
+Pass `fbclid` through as well, because ClickBank's own Meta integration reads it
+from the link.
+
+`OFFER_URL` in the environment:
 
 ```
-https://YOURDOMAIN/api/pb?subid={subid}&payout={payout}&txn={transaction_id}&k=YOUR_SECRET
+https://HOPLINK_OR_DIRECT_TRACKING_LINK?aff_sub1={subid}&traffic_source=meta&traffic_type=paid
 ```
 
-Replace the braces with whatever macro names your network uses. Get a
-transaction-id macro if the network has one: without it, dedupe falls back to
-one conversion per click, and a genuine second purchase from the same click is
+`{subid}` is substituted with the click_id by `/api/go`. Without the placeholder
+it falls back to appending `?subid=`, which ClickBank ignores.
+
+## Wire up the postback (ClickBank)
+
+Affiliates can configure postbacks in their own ClickBank account; this is not
+seller-only. Set the postback URL to:
+
+```
+https://YOURDOMAIN/api/pb?subid={aff_sub1}&payout={affiliate_earnings}&txn={receipt_id}&k=YOUR_SECRET
+```
+
+| adstack param | ClickBank macro | Why |
+|---|---|---|
+| `subid` | `{aff_sub1}` | Resolves back to the click row |
+| `payout` | `{affiliate_earnings}` | Your commission, not the order total |
+| `txn` | `{receipt_id}` | Dedupes network retries |
+| `k` | your `POSTBACK_SECRET` | `/api/pb` returns 403 without it |
+
+Use `{affiliate_earnings}`, not the gross sale figure. Every ROI number in
+`ad_decisions` is computed against what you actually get paid.
+
+On another network the shape is the same, only the macro names change. Always
+get a transaction-id macro if one exists: without it, dedupe falls back to one
+conversion per click, and a genuine second purchase from the same click is
 rejected as a duplicate.
+
+## Conversions API: pick one path, never both
+
+ClickBank ships affiliate-side Meta CAPI natively. You supply your own Pixel ID
+and access token in your ClickBank account, and it sends order form impression
+as InitiateCheckout and initial purchase as Purchase, server to server.
+
+`lib/capi.ts` does the same job from your own postback. **Running both sends Meta
+two Purchase events per sale** with different `event_id` values, which Meta
+cannot dedupe. Reported conversions double, value per conversion halves, and the
+optimiser learns from the wrong number.
+
+Default recommendation for a ClickBank offer: **use ClickBank's, disable ours.**
+Theirs is first-party to the transaction, so it does not depend on your postback
+arriving, on `fbclid` surviving your landing page, or on the `fb.1.` subdomain
+index in `lib/capi.ts` being right for your domain (it assumes the apex; on a
+subdomain it must be 2, and a wrong index fails silently).
+
+Disabling ours takes no code change. Leave `META_PIXEL_ID` unset and
+`sendConversion` returns `{ skipped: ... }`, which is recorded in
+`conversions.capi_response` so the skip is visible rather than assumed.
+
+Use `lib/capi.ts` instead when the network has no native CAPI, or when you leave
+ClickBank. ClickBank's integration covers their network and Meta only.
+
+## Prove it works before you spend
+
+The whole chain is verifiable for the price of a domain and zero ad spend,
+because you own both ends of it. Set `META_TEST_EVENT_CODE` first so nothing
+here reaches your live pixel.
+
+```bash
+# 1. a click, exactly as Meta would send it
+curl -sI "https://YOURDOMAIN/api/c?s=meta&lp=default&ad=smoketest&fbclid=abc123" | grep -i location
+```
+
+Confirm the redirect goes to `/lp/default` and that a row landed:
+
+```sql
+select click_id, ad_id, fbclid, lp_variant from clicks order by ts desc limit 1;
+```
+
+```bash
+# 2. the postback, using the click_id from that row
+curl -s "https://YOURDOMAIN/api/pb?subid=<click_id>&payout=57.35&txn=smoke-1&k=<secret>"
+```
+
+```sql
+select click_id, sub_id, payout, capi_sent, capi_response
+from conversions order by ts desc limit 1;
+select unmatched_postbacks from tracker_health;
+```
+
+A non-null `click_id` and `unmatched_postbacks = 0` is the pass. That is the
+exact link that was silently broken before the audit: a sub-ID that failed to
+resolve used to kill the insert while still answering 200, so the network
+recorded a successful delivery of a conversion that no longer existed.
+
+Run step 2 a second time with the same `txn` and confirm you get `OK duplicate`
+and no second row.
 
 ## Read the numbers
 

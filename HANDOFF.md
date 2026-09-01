@@ -1,7 +1,7 @@
 # HANDOFF — adstack (read first)
 
-**Updated:** 2026-09-01 · Tracker audited, repaired, and given a decision layer.
-Pick up here.
+**Updated:** 2026-09-01 · Tracker audited, repaired, decision layer added, and
+ClickBank wiring confirmed against their live docs. Pick up here.
 
 ## Who / what
 
@@ -107,9 +107,88 @@ scalar subqueries, so it is the likelier half to need a fix on first run.
   payout, 2–3% CVR claimed) over supplements — better break-even math, far lower
   ad-account risk, less saturated
 
+## Marketplace pulled 2026-09-01 — the gravity screen was wrong
+
+Read the full ClickBank physical catalogue (474 offers, sorted by gravity) in
+his logged-in Chrome. **The gravity 50–200 screen selects against him.** Every
+single offer in that band is a Health & Fitness supplement, and their conversion
+rates are so low that the break-even CPC is unbuyable on Meta:
+
+| Offer | Gravity | Payout | CVR | Break-even CPC |
+|---|---|---|---|---|
+| YU SLEEP | 131.6 | $141.46 | 0.31% | $0.44 |
+| FemiCore | 99.1 | $212.72 | 0.42% | $0.89 |
+| ProDentim | 95.1 | $161.85 | 0.44% | $0.71 |
+| Joint Genesis | 62.2 | $161.02 | 0.08% | $0.13 |
+| **Derila pillow** | **42.8** | **$53.56** | **3.54%** | **$1.90** |
+
+A $212 payout at 0.42% is worth less per click than a $53 payout at 3.54%.
+Gravity counts how many affiliates got paid, and on ClickBank those are email
+and native buyers, not Meta buyers. **Screen on break-even CPC, not gravity.**
+
+The non-supplement physical universe is tiny — roughly 15 offers. Shortlist:
+
+| Offer | Gravity | Payout | CVR | BE CPC | Approval |
+|---|---|---|---|---|---|
+| Derila Ergo Memory Foam Pillow | 42.8 | $53.56 | 3.54% | $1.90 | **Required** |
+| Purisaki Berberine Patches | 29.8 | $57.35 | 3.52% | $2.02 | No |
+| Pulsetto Lite | 2.8 | $112.00 | 3.19% | $3.57 | Required |
+| Matsato Osuren knife | 10.4 | $38.71 | 1.94% | $0.75 | No |
+
+His $1.88 working number was right by accident. Derila lands at $1.90, and its
+listed EPC of $1.91 confirms it independently.
+
+**Pick: Derila**, best economics in the whole physical catalogue. Blocked on
+approval, which is the step that already killed MaxBounty. **Fallback: Purisaki**,
+same economics, no approval gate, but it is a weight-loss patch and therefore
+carries the supplement ad-account risk he chose e-commerce to avoid.
+
+Derila, Purisaki and Matsato all come from one vendor (Orbio,
+`simona.jazdauskaite@orbio.world`). One approval conversation likely covers all.
+
+Halal filter removed a large slice of the high-gravity list regardless of
+numbers: The Genius Switch / Genius Song / Memory Wave (manifestation), Year of
+the Horse (astrology), His Secret Obsession.
+
+## ClickBank wiring, verified against their docs 2026-09-01
+
+- **Affiliates can configure postbacks.** Not seller-only. `/api/pb` does fire.
+- **Use `aff_sub1`, not `tid`.** The newer affiliate tracking parameters allow
+  100 chars including hyphens, so a 36-char UUID click_id fits. This was a real
+  risk: the legacy TID field would not have held one.
+- Macro mapping: `subid`←`{aff_sub1}`, `payout`←`{affiliate_earnings}`,
+  `txn`←`{receipt_id}`. Use affiliate earnings, not gross sale — every ROI
+  number is computed against what he actually gets paid.
+- **ClickBank ships affiliate-side Meta CAPI natively.** Own Pixel ID and token,
+  configured in his ClickBank account, sends InitiateCheckout and Purchase S2S.
+- **Do not run both CAPI paths.** ClickBank's and `lib/capi.ts` would each send a
+  Purchase with different `event_id`s, which Meta cannot dedupe. Conversions
+  double, value halves, optimiser learns the wrong number.
+- **Decision: use ClickBank's, disable ours.** Theirs is first-party to the
+  transaction and does not depend on the postback arriving, on fbclid surviving
+  the LP, or on the `fb.1.` subdomain index being right. Disabling needs no code
+  change — leave `META_PIXEL_ID` unset and `sendConversion` returns `{skipped}`.
+  Revisit if he leaves ClickBank; their integration is their network + Meta only.
+
+Full wiring, macro table and a zero-spend smoke test are in `template/README.md`.
+
+## Dub was evaluated and rejected 2026-09-01
+
+Research suggested pointing outbound links at Dub instead of writing tracking
+code. Read Dub's conversion docs: recording a sale needs their script on the
+destination site, a prior lead event, and a server-side `POST /track/sale` from
+the merchant's backend. He controls none of those — the destination is Orbio's
+checkout. No documented path for third-party network postbacks, no Meta CAPI.
+
+Dub is merchant-side, for running your own affiliate program. He is the
+affiliate. It could replace `/api/c` only, at the cost of a redirect hop on paid
+traffic. **Remember Dub for later**: if he ships a product with its own affiliate
+program, Dub Partners is the right tool.
+
 **Open:**
-- Pick the specific offer. Need marketplace rows: name, gravity, avg $/conversion.
-  Screen gravity 50–200; above that is saturated.
+- Get approved for Derila (`simona.jazdauskaite@orbio.world`). Gating step.
+- Set `config.target_payout` / `config.target_cvr` once the offer is confirmed.
+  Still at the $75 / 2.5% defaults, which judge a different offer.
 - Landing page (build after offer is picked)
 - Deploy tracker: Supabase project + Vercel + throwaway domain (~$12)
 - TikTok/Google/Snap/Reddit/Pinterest conversion adapters — only Meta is built
@@ -152,9 +231,19 @@ break-even CPC = payout × conversion rate
 
 ## Next action
 
-Get the ClickBank performance-e-commerce marketplace rows, run `adstack-offer`
-math on the top candidates, pick one, build the LP. The tracker is no longer the
-blocker.
+Two tracks, and they do not block each other.
+
+1. **Approval.** Email Orbio about Derila. Nothing downstream moves until it is
+   answered, and it is the step that silently kills plans.
+2. **Plumbing.** Does not need an offer or a dollar of ad spend. Deploy, then
+   run the smoke test in `template/README.md`: one self-made click, one curl'd
+   postback, confirm `conversions.click_id` is non-null and
+   `tracker_health.unmatched_postbacks` is 0. That verifies the exact link that
+   was silently broken before the audit.
+
+If Derila is rejected, Purisaki needs no approval and has the same economics.
+Say so plainly if he takes it: it is a weight-loss patch, which reintroduces the
+supplement ad-account risk that e-commerce was chosen to avoid.
 
 Once live, the daily loop is one query. Do not read raw tables:
 
