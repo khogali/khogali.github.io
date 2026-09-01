@@ -116,9 +116,9 @@ scalar subqueries, so it is the likelier half to need a fix on first run.
 | Vercel team | `team_b2Q2wZtXXXRROzcSJWoKtJcF`, plan **pro** (upgraded 2026-09-01) |
 | Vercel project | `adstack` / `prj_FUpbBCIwOx843OtZbPkuaU9jp2Qo` / branch `adstack-main` / root `template` |
 | Live URL | `https://thecravingsnote.com` — `/`, `/lp/default`, `/privacy`, `/terms` all 200 |
-| Meta portfolio | **Kho's Recs**, `business_id=1766809867805983` |
-| Meta domain | **`thecravingsnote.com` VERIFIED** 2026-09-01, asset id `1828613468136112` |
-| Meta ad account | `124463681691678` — exists but is **NOT in the portfolio** |
+| Meta portfolio | **Sélectionné store**, `business_id=1117661844127145` (moved off `Kho's Recs` 2026-09-01) |
+| Meta domain | **`thecravingsnote.com` VERIFIED** in Sélectionné store, asset id `2470795726763483` |
+| Meta ad account | `124463681691678` — personal, **cannot be claimed**, unbilled. A new one must be created inside the portfolio |
 | Burner domain | **`thecravingsnote.com`** — bought, attached to Production, apex only (www redirect deliberately OFF) |
 | Offer | **Purisaki Berberine Patches**, lander `cbpage=lp1`, on Meta (decided 2026-09-01) |
 | ClickBank | nickname **`shilkawia`** (new, hops cleanly). `ashilkawi` and `a7medkhoga` are dead — `accntstate`. Vendor `otppurisak` |
@@ -184,14 +184,33 @@ in `lib/capi.ts` if that path is ever re-enabled.
 
 ## Meta setup, done and not-done (2026-09-01)
 
-**Domain verified.** Portfolio `Kho's Recs` (`1766809867805983`), domain asset
-`1828613468136112`, verified by meta-tag. The tag lives in the `<head>` of
-`template/index.html` and **must stay there** — Meta re-checks, and the tag must
-be server-rendered, not JS-injected:
+**Domain verified in `Sélectionné store`** (`1117661844127145`), asset
+`2470795726763483`. The tag lives in the `<head>` of `template/index.html` and
+**must stay there** — Meta re-checks, and it must be server-rendered, not
+JS-injected:
 
 ```html
-<meta name="facebook-domain-verification" content="ri8twzv6n54hy8ozd48h6xqfsi4na4" />
+<meta name="facebook-domain-verification" content="edzll9esrw55u74wv9r12vrz7wxftf" />
 ```
+
+It was first verified in `Kho's Recs` and moved on 2026-09-01. A domain belongs
+to exactly one portfolio, so moving it meant remove -> re-add -> new token ->
+redeploy -> re-verify. **If it ever moves again, the token changes and
+`template/index.html` must be updated in the same pass**, or verification
+silently lapses.
+
+**Neither portfolio owns a Page or an ad account.** Business Manager reports 0
+Pages and 0 ad accounts for both. "Shilkawi Med" is the *user profile* name, not
+a third portfolio. The Page `Sélectionné store` (`597277517109514`) and the ad
+account `124463681691678` are **personal assets outside Business Manager**, and
+Meta refuses to pull either in:
+
+- The ad account is blocked with *"This personal ad account can't be added to
+  Business Manager because a payment has not been made."*
+- The Page would not move either.
+
+So both must be **created inside the portfolio**, not adopted. Meta's own
+suggestion for the ad account, and the only remaining path for the Page.
 
 Verification was only possible after two prerequisites that did not exist:
 a Business Portfolio (Ahmed created it), and a root page (`/` used to 404, so
