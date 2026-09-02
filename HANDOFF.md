@@ -44,7 +44,7 @@ anything below it; most of the file is the history of how it got here.
 | Ads | 5 stills ACTIVE: A1 `120252090124840351` · A2 `120252090130440351` · A3 `120252091576930351` · A4 `120252091584800351` · A5 `120252091590750351`. **3 videos ACTIVE** (activated 2026-09-02; V2/V3 were in Meta review at activation) — see "Video ads" below |
 | Landing page live ads hit | `/lp/default` = the **long advertorial** (11KB). Old 200-word page kept at `/lp/short` |
 | Break-even CPC | **$0.40** (`57.35 × 0.007`). Was $2.02 under a wrong CVR — see below |
-| Database | First real traffic landed; `spend_daily` written by hand via MCP. Spend at 03:06 UTC 2026-09-02: **$31.15**, videos now taking most of it. `plumbing: ok` |
+| Database | First real traffic landed; `spend_daily` written by hand via MCP. Spend at 04:06 UTC 2026-09-02: **$32.04**, videos taking most of it; overnight lull. `plumbing: ok` |
 | Spend feed | `/api/spend` deployed, `CRON_SECRET` + `META_AD_ACCOUNT_ID` set, **`META_ADS_TOKEN` missing**. Spend is pulled on request through the `meta-ads` MCP until then |
 
 **Daily loop:** `select * from adstack_status;` — one row. Every ad reads WAIT
@@ -164,6 +164,11 @@ mobile layout. The reliable path is
 `npx playwright screenshot --browser=chromium --viewport-size=390,844 --full-page URL out.png`
 (Chromium headless shell is installed under `~/Library/Caches/ms-playwright`;
 the iPhone device profile wants WebKit, which is not — use `--viewport-size`).
+
+**Third pull — 04:06 UTC (~9pm Pacific):** spend **$32.04** (+$0.89 in an
+hour — overnight lull). V2 LPV caught up to 66 of 83 link clicks. Only **5
+clicks since the CTA fix, 0 out** — unreadable; do not interpret. The first
+real read on the fix is tomorrow's Pacific afternoon traffic.
 
 **Read on the next pull:** click-out should move well above 10% for video
 traffic. If it does not, the page is too long for video-arrival mode and the
