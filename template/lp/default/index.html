@@ -35,6 +35,7 @@ p{margin-bottom:17px;font-size:17.5px}
 .byline{font-size:14px;color:#6b7280;margin-bottom:26px;padding-bottom:18px;border-bottom:1px solid #f3f4f6}
 .cta{display:block;width:100%;text-align:center;background:#15803d;color:#fff;font-size:19px;font-weight:700;padding:18px 24px;border-radius:10px;text-decoration:none;margin:26px 0 10px;box-shadow:0 2px 0 #14532d}
 .cta:active{transform:translateY(1px);box-shadow:none}
+.cta-soft{background:#fff;color:#15803d;border:2px solid #15803d;box-shadow:none;font-size:17px;padding:14px 20px}
 .sub{text-align:center;font-size:13px;color:#6b7280;margin-bottom:30px}
 .proof{border-left:3px solid #15803d;padding:15px 17px;background:#f0fdf4;margin:24px 0;font-size:16.5px}
 .aside{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px 18px;margin:26px 0;font-size:16px}
@@ -70,6 +71,9 @@ footer p{font-size:12.5px;margin-bottom:10px}
     “I am fine until mid-afternoon. Genuinely fine. Then somewhere around three I am
     standing in the kitchen eating something I did not decide to eat.”
   </div>
+
+  <a class="cta cta-soft" href="/api/go" data-v="cta1">See what changed it &rarr;</a>
+  <p class="sub">Or keep reading &middot; about three minutes</p>
 
   <h2>It is not a discipline problem</h2>
 
@@ -132,6 +136,9 @@ footer p{font-size:12.5px;margin-bottom:10px}
   meaningful difference for any individual is exactly the sort of thing you should read
   the company's own evidence on and judge for yourself — but the reasoning is at least
   coherent, and it explains why the format exists at all.</p>
+
+  <a class="cta" href="/api/go" data-v="cta2">See how the delivery method works &rarr;</a>
+  <p class="sub">The company's write-up &middot; it is a sales page, and we say so below</p>
 
   <div class="aside">
     <strong>What we are not saying</strong>
@@ -199,8 +206,9 @@ window.VARIANTS = {
 (function(){
   var p = new URLSearchParams(location.search);
   var cid = p.get('cid') || (document.cookie.match(/(?:^|;\s*)cid=([^;]+)/)||[])[1] || '';
-  var cta = document.getElementById('cta');
-  if (cid) cta.href = '/api/go?cid=' + encodeURIComponent(cid);
+  if (cid) document.querySelectorAll('.cta').forEach(function(a){
+    a.href = '/api/go?cid=' + encodeURIComponent(cid);
+  });
 
   var v = p.get('v');
   if (v && window.VARIANTS && window.VARIANTS[v]) {
