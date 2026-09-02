@@ -44,7 +44,7 @@ anything below it; most of the file is the history of how it got here.
 | Ads | A1 `120252090124840351` · A2 `120252090130440351` · A3 `120252091576930351` · A4 `120252091584800351` · A5 `120252091590750351` |
 | Landing page live ads hit | `/lp/default` = the **long advertorial** (11KB). Old 200-word page kept at `/lp/short` |
 | Break-even CPC | **$0.40** (`57.35 × 0.007`). Was $2.02 under a wrong CVR — see below |
-| Database | `clicks` **0**, `conversions` 0, `spend_daily` 0, `plumbing: ok`. Clean baseline; the next click is a stranger |
+| Database | First real traffic landed. See "First pull" below. `plumbing: ok` |
 | Spend feed | `/api/spend` deployed, `CRON_SECRET` + `META_AD_ACCOUNT_ID` set, **`META_ADS_TOKEN` missing**. Spend is pulled on request through the `meta-ads` MCP until then |
 
 **Daily loop:** `select * from adstack_status;` — one row. Every ad reads WAIT
@@ -56,6 +56,37 @@ job and any shortfall is on the vendor page).
 
 **Say "pull spend"** in a fresh session and Claude fills `spend_daily` through
 the MCP.
+
+### First pull — 2026-09-02 01:30 UTC, ~5 hours of delivery
+
+Spend written to `spend_daily` by hand through the MCP (per-ad `link_click`,
+not `clicks`, matching what `/api/spend` will pull when it has a token).
+
+| | Meta | Tracker |
+|---|---|---|
+| Spend | **$11.88** | — |
+| Impressions | 472 | — |
+| Link clicks / tracked clicks | 19 | **33** |
+| Landing page views / click-outs | 10 | **1** |
+
+Per ad: A2 `$6.13` / 21 tracked / **$0.29 CPC** — Meta has picked it and is
+concentrating CBO there. A4 `$1.28` / 7 / $0.18. A1 `$2.86` / 4 / $0.72.
+A3 `$0.93` / 1. A5 `$0.68` / 0. All five read **WAIT**, correctly.
+
+**The good number:** CPC on the leaders is $0.18–$0.29, *under* the $0.40
+break-even. That is the number that was expected not to close at Meta's
+usual $1.50–2.50. Five hours is nothing, but it is the right direction.
+
+**The bad number, and the fix:** click-out was **1 of 33 = 3%**. Tracking was
+verified correct first (the CTA carried `cid`, `/api/go` marks `clicked_out`).
+The cause was layout: the advertorial had **one** CTA, at 3013px on a 3419px
+page with an 803px viewport — 3.75 screens down. Commit `21e2fde` adds a soft
+CTA after the hook (now at 644px, inside the first screen) and a full one
+after the mechanism section, all three carrying `cid`. **Re-read click-out on
+the next pull; it should move well above 25% or the page has a deeper problem.**
+
+Noted, not acted on: 3 of 33 clicks came from `AE`. Targeting is US-only;
+either VPN traffic or a Meta geo leak. Watch, do not chase yet.
 
 ### Still for Ahmed
 
