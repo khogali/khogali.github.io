@@ -45,7 +45,7 @@ anything below it; most of the file is the history of how it got here.
 | Landing page live ads hit | `/lp/default` = the **long advertorial** (11KB). Old 200-word page kept at `/lp/short` |
 | Break-even CPC | **$0.40** (`57.35 × 0.007`). Was $2.02 under a wrong CVR — see below |
 | Database | `spend_daily` now written **by the cron itself** (first automated pull 04:35 UTC 2026-09-02: 8 rows, **$32.22** for day 2026-09-01). `ad_decisions` shows spend, CPC and a verdict for every ad. `plumbing: ok` |
-| Reconciliation | **BUILT 2026-09-02**, `/api/reconcile` + cron `30 8 * * *`. Waiting on `CLICKBANK_API_KEY` in Vercel. See "Reconciliation" below |
+| Reconciliation | **LIVE 2026-09-02.** `/api/reconcile` + cron `30 8 * * *`, `CLICKBANK_API_KEY` set. First run 04:47 UTC: `refunds 0, chargebacks 0, reversed 0, sales 0, missed_inserted []` — ClickBank reached, nothing to correct yet. See "Reconciliation" below |
 | Spend feed | **FULLY WIRED 2026-09-02.** `/api/spend` + Vercel cron `0 8 * * *` + `META_ADS_TOKEN` (system user `tcn_kho`, app `adstack`, `ads_read`, never expires). Verified end to end via the dashboard **Run** button → 200 → rows upserted |
 
 **Daily loop:** `select * from adstack_status;` — one row. Every ad reads WAIT
@@ -179,11 +179,8 @@ handoff, ~250 words) — not more CTAs.
 
 ### Still for Ahmed
 
-1. ~~Regenerate the ClickBank API key~~ — **DONE 2026-09-02.** Now: Vercel →
-   Environment Variables → add **`CLICKBANK_API_KEY`** (Sensitive, the full
-   `API-…` value) → **Redeploy** → tell Claude, who clicks **Run** on the
-   `/api/reconcile` cron and reads the JSON. Until then the reconcile cron
-   answers 503 every morning, deliberately.
+1. ~~Regenerate the ClickBank API key~~ — **DONE 2026-09-02**, and
+   `CLICKBANK_API_KEY` is in Vercel. Reconciliation verified live the same night.
 2. ~~**`META_ADS_TOKEN`**~~ — **DONE 2026-09-02.** Ahmed got developer access;
    Claude built the app and staged the token wizard; Ahmed generated, pasted,
    redeployed. Cron verified. See "Spend ingest" below.
@@ -1064,7 +1061,7 @@ POST to this endpoint could rewrite spend, and through it every CUT/SCALE verdic
 `check.mjs` enforces the secret gate, the fail-closed branch, the link-click
 choice and the idempotent upsert — all four verified to fail when broken.
 
-## Reconciliation — BUILT 2026-09-02, needs `CLICKBANK_API_KEY`
+## Reconciliation — LIVE 2026-09-02
 
 `template/api/reconcile.ts`. Reads ClickBank's own ledger through
 `orders2/list` and corrects `conversions`. Cron `30 8 * * *`, thirty minutes
@@ -1110,6 +1107,15 @@ predate the tracker. Listed, not acted on.
 
 API auth is a single header, `Authorization: API-…`, `Accept: application/json`.
 Limits: 25,000 calls/day, 10/s. This job makes three calls a night.
+
+**Verified 2026-09-02 04:47 UTC** via the dashboard **Run** button on
+`dpl_C1UFCvV7GDFzQ8VAryhP31maj7uT`: HTTP 200 and the summary line in the
+runtime log, all zeros — correct, `conversions` is still empty. The summary is
+`console.log`ged on every run because the response body is never shown
+anywhere; **View Logs** on the cron row is where to read it.
+
+Env state: `CRON_SECRET` set, `CLICKBANK_API_KEY` set by Ahmed 2026-09-02
+(the regenerated `CL Assistant` key, Analytics + Orders Read).
 
 ## Meta pixel on the LP — ADDED 2026-09-01
 
