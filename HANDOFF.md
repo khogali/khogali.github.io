@@ -1340,6 +1340,47 @@ burning $2.00/click healthy. Now `0.007`, break-even **$0.40**. The config row
 carries a note explaining this so it does not get "corrected" back. Revisit
 once real CVR exists.
 
+## BLOCKED on one API write — 2026-09-02 22:45 UTC (needs a session with a live Ads MCP)
+
+Balance paid, account Active again. But **no edit to ad set
+`120252090110050351` can be published from Ads Manager**: every publish fails
+with *"Update your location targeting: We have removed the location targeting
+options 'people living in, people traveling to or people recently in a
+location'."* The ad set carries `geo_locations.location_types: ["home"]`
+from its original API creation; Meta has since deprecated that field, the
+Ads Manager UI has no control for it, and the UI diff never strips it
+(tried: remove/re-add United States, add an exclusion to force a real diff —
+same error both times). The ad set still delivers; it just cannot be edited
+through the UI.
+
+**Fix = one `ads_update_entity` call that resends targeting WITHOUT
+`location_types`**, which also applies the Feed + Stories widening:
+
+```
+tool: ads_update_entity
+ad_account_id: 3975035259299444
+entity_id: 120252090110050351
+entity_type: ad_set
+fields: {"targeting":{"age_min":25,"age_max":65,
+  "geo_locations":{"countries":["US"]},
+  "targeting_automation":{"advantage_audience":1},
+  "publisher_platforms":["facebook","instagram"],
+  "facebook_positions":["feed","story"],
+  "instagram_positions":["stream","story"],
+  "device_platforms":["mobile","desktop"]}}
+```
+
+Then `ads_get_errors` on the ad set should be empty and Ads Manager's
+"Setup error" badge should clear. The unpublished draft in Ads Manager was
+discarded so it cannot conflict.
+
+Why this session cannot do it: the Ads MCP token expired during the lock and
+re-authorization is per Claude session; Ahmed re-authorized elsewhere. Any
+session where `meta-ads` answers can run the call above verbatim.
+
+**Lesson for the template:** never pass `location_types` when creating ad
+sets. `ads_create_ad_set` did on 2026-09-01; strip it from the setup spec.
+
 ## ROOT CAUSE of the day-2 stall: ad account unsettled — 2026-09-02 22:10 UTC
 
 Opening the ad set in Ads Manager (Chrome, Ahmed's login) showed what neither
