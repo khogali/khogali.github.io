@@ -209,7 +209,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  return res.status(200).json({
+  const summary = {
     ok: true,
     days,
     refunds: refunds.length,
@@ -220,7 +220,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     unmatched_reversals: reversalReceipts.filter(r => !reversed.includes(r)),
     sales: sales.length,
     missed_inserted: inserted,
-  });
+  };
+  // The cron's only visible output is the runtime log — the response body is
+  // never shown anywhere.
+  console.log('reconcile', JSON.stringify(summary));
+  return res.status(200).json(summary);
 }
 
 function isoDaysAgo(n: number): string {
