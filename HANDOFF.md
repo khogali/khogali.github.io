@@ -41,7 +41,7 @@ anything below it; most of the file is the history of how it got here.
 |---|---|
 | Campaign | `120252090098770351` — TCN \| Purisaki \| Sales-Purchase \| v1, CBO $40/day |
 | Ad set | `120252090110050351` — US, Advantage+ Audience, age 25+ signal, OFFSITE_CONVERSIONS on PURCHASE |
-| Ads | 5 stills ACTIVE: A1 `120252090124840351` · A2 `120252090130440351` · A3 `120252091576930351` · A4 `120252091584800351` · A5 `120252091590750351`. **3 videos PAUSED** — see "Video ads" below |
+| Ads | 5 stills ACTIVE: A1 `120252090124840351` · A2 `120252090130440351` · A3 `120252091576930351` · A4 `120252091584800351` · A5 `120252091590750351`. **3 videos ACTIVE** (activated 2026-09-02; V2/V3 were in Meta review at activation) — see "Video ads" below |
 | Landing page live ads hit | `/lp/default` = the **long advertorial** (11KB). Old 200-word page kept at `/lp/short` |
 | Break-even CPC | **$0.40** (`57.35 × 0.007`). Was $2.02 under a wrong CVR — see below |
 | Database | First real traffic landed. See "First pull" below. `plumbing: ok` |
@@ -88,7 +88,7 @@ the next pull; it should move well above 25% or the page has a deeper problem.**
 Noted, not acted on: 3 of 33 clicks came from `AE`. Targeting is US-only;
 either VPN traffic or a Meta geo leak. Watch, do not chase yet.
 
-### Video ads — built 2026-09-02, all PAUSED
+### Video ads — built and ACTIVATED 2026-09-02 ~02:10 UTC
 
 Research the same night showed the direct competitor (Tryskintle, ~200 active
 ads on "berberine patch") runs **video only**, and 2026 Meta benchmarks put video
@@ -121,10 +121,11 @@ A1 still.
 
 Credits: 4 renders × 180 = **720 spent**, from 1,878.
 
-**Next action:** Ahmed watches the three mp4s (sent in chat), then says which to
-turn on. Recommendation: turn on **all three** and let CBO pick — this is the
-one experiment that tests whether the offer works at all. Do not touch the
-stills; they are the control.
+**Activated 2026-09-02 on Ahmed's instruction.** All three are ON alongside the
+five stills; CBO will pick. Immediately after activation V1 read ACTIVE, V2
+PENDING_REVIEW, V3 IN_PROCESS — normal post-activation states, the stills went
+through the same. The stills are the control. **Do not touch anything for 48
+hours.** Then "pull spend" and compare video vs still on CPC and click-out.
 
 ### Still for Ahmed
 
