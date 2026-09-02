@@ -41,7 +41,7 @@ anything below it; most of the file is the history of how it got here.
 |---|---|
 | Campaign | `120252090098770351` — TCN \| Purisaki \| Sales-Purchase \| v1, CBO $40/day |
 | Ad set | `120252090110050351` — US, Advantage+ Audience, age 25+ signal, OFFSITE_CONVERSIONS on PURCHASE |
-| Ads | A1 `120252090124840351` · A2 `120252090130440351` · A3 `120252091576930351` · A4 `120252091584800351` · A5 `120252091590750351` |
+| Ads | 5 stills ACTIVE: A1 `120252090124840351` · A2 `120252090130440351` · A3 `120252091576930351` · A4 `120252091584800351` · A5 `120252091590750351`. **3 videos PAUSED** — see "Video ads" below |
 | Landing page live ads hit | `/lp/default` = the **long advertorial** (11KB). Old 200-word page kept at `/lp/short` |
 | Break-even CPC | **$0.40** (`57.35 × 0.007`). Was $2.02 under a wrong CVR — see below |
 | Database | First real traffic landed. See "First pull" below. `plumbing: ok` |
@@ -87,6 +87,44 @@ the next pull; it should move well above 25% or the page has a deeper problem.**
 
 Noted, not acted on: 3 of 33 clicks came from `AE`. Targeting is US-only;
 either VPN traffic or a Meta geo leak. Watch, do not chase yet.
+
+### Video ads — built 2026-09-02, all PAUSED
+
+Research the same night showed the direct competitor (Tryskintle, ~200 active
+ads on "berberine patch") runs **video only**, and 2026 Meta benchmarks put video
+~34% below static on CPA. `ugc-architect` was run on Purisaki: shock-scored
+facts → three scripts with rotated hook formats → Seedance 2.5 (t2v, 20s, 9:16,
+1080p, audio) at **180 credits each**. Every render was frame-verified (5 frames
+per video: identity, scale, hands, placement, no text) before an ad was built.
+
+| Ad | Hook | Ad id | Creative | Video | Thumb |
+|---|---|---|---|---|---|
+| V1 Never Gets In | Contrarian / Breakdown | `120252100699740351` | `1781394332862815` | `1647024370114665` | `/assets/thumbs/v1.jpg` |
+| V2 Why Always Three | Question / Problem Solver | `120252100948930351` | `1802287947625532` | `1070083505415262` | `/assets/thumbs/v2.jpg` |
+| V3 Capsule vs Patch | Comparison / Breakdown | `120252100127830351` | `27505128495833917` | `1513036364194903` | `/assets/thumbs/v3.jpg` |
+
+All in ad set `120252090110050351`, same destination URL and macros as the
+stills, same rails: third-person, no numbers, no bodies (patch on forearm /
+upper arm only), no institutions, claims attributed to the company, `#ad` in
+primary text. Thumbnails are served from our own domain because the Meta
+local-upload path is interactive-only.
+
+**V2 was regenerated.** The first render's man strongly resembled a well-known
+actor — a likeness/rights problem no other frame can rescue. Regen prompt added
+a "Casting law" block (ordinary, forgettable, must not resemble any public
+figure) and stripped cinematic lighting. Second render passed. Cost of the
+lesson: 180 credits. **Put that casting block in every future UGC prompt.**
+
+Known, accepted flaw: AI clocks. V2's opener dial reads ~10:25 not ~3:05; the
+dialogue carries the time and it is unreadable at feed size. Same class as the
+A1 still.
+
+Credits: 4 renders × 180 = **720 spent**, from 1,878.
+
+**Next action:** Ahmed watches the three mp4s (sent in chat), then says which to
+turn on. Recommendation: turn on **all three** and let CBO pick — this is the
+one experiment that tests whether the offer works at all. Do not touch the
+stills; they are the control.
 
 ### Still for Ahmed
 
