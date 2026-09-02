@@ -40,7 +40,7 @@ anything below it; most of the file is the history of how it got here.
 | What | Value |
 |---|---|
 | Campaign | `120252090098770351` — TCN \| Purisaki \| Sales-Purchase \| v1, CBO $40/day |
-| Ad set | `120252090110050351` — US, Advantage+ Audience, age 25+ signal, OFFSITE_CONVERSIONS on PURCHASE. **Placements restricted to Facebook Feed + Instagram Feed 2026-09-02 15:00 UTC** — see "Placements restricted" |
+| Ad set | `120252090110050351` — US, Advantage+ Audience, age 25–65, OFFSITE_CONVERSIONS on PURCHASE. **Placements: Facebook Feed + Instagram Feed + Facebook Stories + Instagram Stories** (Reels and Audience Network off) since 2026-09-02 22:38 UTC — see "FIXED" and "Placements restricted" |
 | Ads | 5 stills ACTIVE: A1 `120252090124840351` · A2 `120252090130440351` · A3 `120252091576930351` · A4 `120252091584800351` · A5 `120252091590750351`. **3 videos ACTIVE** (activated 2026-09-02; V2/V3 were in Meta review at activation) — see "Video ads" below |
 | Landing page live ads hit | `/lp/default` = the **long advertorial** (11KB). Old 200-word page kept at `/lp/short` |
 | Break-even CPC | **$0.40** (`57.35 × 0.007`). Was $2.02 under a wrong CVR — see below |
@@ -1340,7 +1340,30 @@ burning $2.00/click healthy. Now `0.007`, break-even **$0.40**. The config row
 carries a note explaining this so it does not get "corrected" back. Revisit
 once real CVR exists.
 
-## BLOCKED on one API write — 2026-09-02 22:45 UTC (needs a session with a live Ads MCP)
+## FIXED 2026-09-02 22:38 UTC — targeting rewritten via a second session, Feed + Stories live
+
+Ahmed ran the `ads_update_entity` call below from a Claude session whose
+`meta-ads` MCP was authorized. Result: success, `status_forced_to_paused:
+true` (a targeting edit of this kind pauses the ad set), then
+`ads_activate_entity` → ad set ACTIVE, campaign ACTIVE, all 8 ads
+`IN_PROCESS` (re-review after a targeting change; expected, clears in hours).
+`ads_get_errors` empty.
+
+Verified from this session through Ads Manager: no Payment error, no Setup
+error, Locations = "Inclusion: United States" with the deprecated
+`location_types` gone, **Placement controls: Included 4** (Facebook Feed,
+Instagram Feed, Facebook Stories, Instagram Stories), Excluded 18. The ad
+set is editable from the UI again.
+
+Current live targeting for the record:
+`age 25–65 · US · Advantage+ Audience on · facebook: feed, story ·
+instagram: stream, story · mobile + desktop`.
+
+Ad-level drafts: Ads Manager still lists 8 unpublished ad drafts nobody in
+this session created (probably Ahmed's early "Publish didn't complete"
+toggle). Harmless; discard from "Review and publish" when convenient.
+
+## (superseded) BLOCKED on one API write — 2026-09-02 22:45 UTC
 
 Balance paid, account Active again. But **no edit to ad set
 `120252090110050351` can be published from Ads Manager**: every publish fails
