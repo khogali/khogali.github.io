@@ -1340,6 +1340,25 @@ burning $2.00/click healthy. Now `0.007`, break-even **$0.40**. The config row
 carries a note explaining this so it does not get "corrected" back. Revisit
 once real CVR exists.
 
+## Day 2 check, 2026-09-02 17:55 UTC — delivery near zero, system-user API blocked
+
+- **Spend today: $1.13 by 10:52 PDT**, almost all of it 5–8am on Reels/Stories
+  before the placement change. Since the feed-only edit at 15:00 UTC: 1
+  impression, $0.01. Every ad ACTIVE, `ads_get_errors` empty, delivery
+  "active". Feed-only targeting confirmed saved.
+- **Two causes overlap and cannot be separated yet:** the targeting edit reset
+  learning on a two-day-old account, and Ahmed's login is still in checkpoint.
+- **`/api/spend` now returns 502**: Meta answers the system-user token with
+  `API access blocked` (OAuthException 200). It worked at 08:00 UTC. Nothing
+  changed on our side — this is the login lock reaching the business's API
+  access. **The Ads MCP still works** (it rides Meta's own OAuth). Do not
+  regenerate the token; it will come back when the account unlocks. The 3-day
+  trailing re-pull backfills any day the cron missed, so nothing is lost.
+- **Nothing to do until the unlock.** After it: confirm `/api/spend` is 200
+  again (dashboard Run), then give feed-only 24 hours of daytime delivery
+  before judging it. If impressions are still near zero 24h after unlock,
+  widen to Feed + Stories rather than reopen Reels.
+
 ## Placements restricted to Feed — 2026-09-02 15:00 UTC (the real click-out finding)
 
 The 1.2% click-out was not mainly the CTA. It was **where Meta sent the
