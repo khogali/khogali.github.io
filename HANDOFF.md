@@ -44,8 +44,8 @@ anything below it; most of the file is the history of how it got here.
 | Ads | 5 stills ACTIVE: A1 `120252090124840351` · A2 `120252090130440351` · A3 `120252091576930351` · A4 `120252091584800351` · A5 `120252091590750351`. **3 videos ACTIVE** (activated 2026-09-02; V2/V3 were in Meta review at activation) — see "Video ads" below |
 | Landing page live ads hit | `/lp/default` = the **long advertorial** (11KB). Old 200-word page kept at `/lp/short` |
 | Break-even CPC | **$0.40** (`57.35 × 0.007`). Was $2.02 under a wrong CVR — see below |
-| Database | First real traffic landed; `spend_daily` written by hand via MCP. Spend at 04:06 UTC 2026-09-02: **$32.04**, videos taking most of it; overnight lull. `plumbing: ok` |
-| Spend feed | `/api/spend` deployed, `CRON_SECRET` + `META_AD_ACCOUNT_ID` set, **`META_ADS_TOKEN` missing**. Spend is pulled on request through the `meta-ads` MCP until then |
+| Database | `spend_daily` now written **by the cron itself** (first automated pull 04:35 UTC 2026-09-02: 8 rows, **$32.22** for day 2026-09-01). `ad_decisions` shows spend, CPC and a verdict for every ad. `plumbing: ok` |
+| Spend feed | **FULLY WIRED 2026-09-02.** `/api/spend` + Vercel cron `0 8 * * *` + `META_ADS_TOKEN` (system user `tcn_kho`, app `adstack`, `ads_read`, never expires). Verified end to end via the dashboard **Run** button → 200 → rows upserted |
 
 **Daily loop:** `select * from adstack_status;` — one row. Every ad reads WAIT
 until it clears $75 spend AND 100 clicks; at ~$2 real CPC that is ~5 days for
@@ -54,8 +54,9 @@ only CPC (above ~$2.50 the arithmetic cannot close) and `tracker_health`
 click-out % (under 25% the advertorial is failing; over 45% it is doing its
 job and any shortfall is on the vendor page).
 
-**Say "pull spend"** in a fresh session and Claude fills `spend_daily` through
-the MCP.
+Spend lands in `spend_daily` **automatically every day at 08:00 UTC** (trailing
+3 days, idempotent). "Pull spend" through the MCP is now only for an intraday
+look; it writes the same rows and the cron overwrites them at night.
 
 ### First pull — 2026-09-02 01:30 UTC, ~5 hours of delivery
 
@@ -180,9 +181,9 @@ handoff, ~250 words) — not more CTAs.
 1. **Regenerate the ClickBank API key** — API Management → `CL Assistant` → ⋮
    → Regenerate. Scopes already narrowed to Analytics + Orders Read; the value
    is still the one pasted into chat.
-2. **`META_ADS_TOKEN`** — only if the nightly cron is wanted. Needs a Meta app,
-   which needs developer verification, which was blocked by contact-point
-   problems. Decided 2026-09-01: **not needed now**, the MCP covers spend.
+2. ~~**`META_ADS_TOKEN`**~~ — **DONE 2026-09-02.** Ahmed got developer access;
+   Claude built the app and staged the token wizard; Ahmed generated, pasted,
+   redeployed. Cron verified. See "Spend ingest" below.
 3. **Email capture** on the LP — the one funnel piece designed but not built.
 4. **48-hour hold.** Eight ads are live (5 stills + 3 videos). Do nothing until
    2026-09-04, then "pull spend" and read video vs still on CPC and click-out.
@@ -991,7 +992,7 @@ Manual run: `GET /api/spend?days=3&k=CRON_SECRET`.
 |---|---|---|
 | `CRON_SECRET` | Secret | **SET** by Ahmed 2026-09-01 |
 | `META_AD_ACCOUNT_ID` | Config | **SET** by Claude 2026-09-01 = `3975035259299444` |
-| `META_ADS_TOKEN` | Secret | **STILL MISSING — blocked, see below** |
+| `META_ADS_TOKEN` | Secret | **SET** by Ahmed 2026-09-02 (system user `tcn_kho`, app `adstack`, scope `ads_read`, expiry **Never**) |
 
 Verified after redeploy: `/api/spend` with a wrong key now returns **403**, where
 it returned 503 before. That proves `CRON_SECRET` is wired and the constant-time
@@ -1013,24 +1014,26 @@ to read ads data would mean one leak exposes both conversion writing and ads
 data, and rotating it after any ClickBank incident would silently break the spend
 ingest at the same moment. `tcn_kho` keeps the two blast radii separate.
 
-### BLOCKER: no Meta app in the portfolio
+### RESOLVED 2026-09-02: the Meta app exists, the token is set, the cron ran
 
-`Generate token` is greyed out on `tcn_kho`, and on the CAPI user too. Business
-Settings → Accounts → **Apps** shows **"No apps added"**. A system-user token must
-be issued against a Meta app, and the Conversions API Application is Meta's own
-auto-provisioned internal app, not a portfolio app that can mint tokens.
+The blocker was that no Meta app existed in the portfolio, so `Generate token`
+was greyed on every system user. Once Ahmed's developer account was verified
+(email fixed to `a.khogali@icloud.com`), what was done, and by whom:
 
-**Ahmed only** (app creation needs a developer account, which Claude must not create):
+| Step | Who | Detail |
+|---|---|---|
+| Create app | Claude staged, **Ahmed clicked Create** (it accepts Meta Platform Terms) | `adstack`, ID **`28308339148822172`**, use case "Create & manage ads with Marketing API", linked to `Sélectionné store`, contact `a.khogali@icloud.com` |
+| Assign app to system user | Claude | `tcn_kho` → Assign assets → Apps → `adstack` → **Develop app** only. Without this the token wizard says "No permissions available" — and it stays stale until the page is reloaded |
+| Token wizard | Claude staged app + expiry + scope, **Ahmed clicked Generate** | expiry **Never** (60 days would silently kill the cron in November), scope **`ads_read` only** |
+| Vercel | Ahmed | `META_ADS_TOKEN` as Sensitive, then Redeploy → `dpl_4CKuECxFL2wUC5zqbjVXZ2MPqMPs` |
+| Smoke test | Claude | Vercel → Settings → Cron Jobs → **Run** (sends the platform's own bearer, so no `CRON_SECRET` needed). Runtime log: `GET /api/spend 200` at 04:35:05 UTC. `spend_daily`: 8 rows, `pulled_at` 04:35:05, $32.22. `ad_decisions` populated |
 
-1. `developers.facebook.com` → My Apps → Create App → type **Business**
-2. Business Settings → Accounts → **Apps** → **Add** → select that app
-3. Business Settings → Users → System users → **tcn_kho** → **Generate token**
-   → pick the app → tick **`ads_read` ONLY** → copy
-4. Vercel → Environment Variables → Add → **Secret** → `META_ADS_TOKEN` → paste
-5. **Redeploy** (Vercel does not apply new env vars to existing deployments)
+The app is unpublished (development mode) and that is fine: a system-user
+token for the business's own ad account needs no App Review. Do not "Publish"
+it; nothing requires it and it invites review questions.
 
-Then smoke-test: `curl -s "https://thecravingsnote.com/api/spend?days=3&k=CRON_SECRET"`
-Expect `{"ok":true,"days":3,"rows":0,"note":"no spend in window"}` until ads run.
+Manual run if ever needed: `curl -s "https://thecravingsnote.com/api/spend?days=3&k=CRON_SECRET"`,
+or the dashboard **Run** button, which is easier and keeps the secret out of a shell history.
 
 Until `CRON_SECRET` is set the endpoint returns **503 not configured**, which is
 deliberate: an unset secret must never mean "skip the check". Anyone who could
@@ -1278,15 +1281,13 @@ burning $2.00/click healthy. Now `0.007`, break-even **$0.40**. The config row
 carries a note explaining this so it does not get "corrected" back. Revisit
 once real CVR exists.
 
-## Meta developer account — decided NOT needed (2026-09-01)
+## Meta developer account — SUPERSEDED: done 2026-09-02
 
-Creating a Meta app (for a system-user token → `META_ADS_TOKEN` → nightly
-cron) was blocked by developer verification, which was blocked by the dead
-email. Rather than fight it: the **Meta Ads MCP** is authorized at user scope
-and reads insights without any app. What the app buys is *automation*, not
-capability. At one campaign, a pull on request is fine. Revisit when running
-several offers. `tcn_kho` (`61593965762611`) already has the ad account with
-**View performance** only, so the moment an app exists it is one token away.
+On 2026-09-01 this was parked ("the MCP covers spend, revisit later") because
+developer verification was blocked by the dead email. Ahmed fixed the email
+and got access on 2026-09-02, and the whole chain was finished the same night:
+app `adstack` (`28308339148822172`) → assigned to `tcn_kho` → `ads_read` token,
+never expires → `META_ADS_TOKEN` → cron verified. Details under "Spend ingest".
 
 **Do not reuse the Conversions API System User for this.** Its token is the
 one pasted into ClickBank; a third party already holds that identity.
@@ -1303,8 +1304,6 @@ that is a habit, not a setting.
 ## Still deliberately NOT built
 
 - **Email capture** on the LP. Designed 2026-09-01, highest-value next build.
-- **Nightly spend cron.** Code exists (`/api/spend`); gated on `META_ADS_TOKEN`,
-  which is gated on a Meta app. Spend is pulled through the MCP on request.
 - **Reconciliation ingest** for refunds/reversals. ClickBank's affiliate
   postback does not document a reversal event, so `conversions.status` never
   becomes `reversed` on its own and `tracker_health.revenue_reversed` stays 0.
@@ -1362,8 +1361,8 @@ verdict.
 The campaign is live. The next action is **to wait**, and to resist doing
 anything else.
 
-1. **Day 1–2:** say "pull spend." Confirm real clicks are landing in `clicks`
-   with real ad IDs. Confirm `tracker_health.clickout_pct` is above 25%. If
+1. **Day 1–2:** spend arrives on its own at 08:00 UTC. Confirm real clicks are
+   landing in `clicks` with real ad IDs. Confirm `tracker_health.clickout_pct` is above 25%. If
    `clicks` is still empty 4 hours after activation, that is worth
    investigating; before that it is normal.
 2. **Day 3–5:** first ad clears the judgement gate. Read `ad_decisions`, act on
