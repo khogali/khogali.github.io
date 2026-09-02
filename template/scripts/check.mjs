@@ -132,7 +132,7 @@ process.env.SUPABASE_SERVICE_KEY = 'k';
 assert.equal(missingConfig(), null, 'complete config must report no error');
 if (saved.u) process.env.SUPABASE_URL = saved.u; else delete process.env.SUPABASE_URL;
 if (saved.k) process.env.SUPABASE_SERVICE_KEY = saved.k; else delete process.env.SUPABASE_SERVICE_KEY;
-for (const f of ['api/c.ts','api/go.ts','api/pb.ts','api/spend.ts']) {
+for (const f of ['api/c.ts','api/go.ts','api/pb.ts','api/spend.ts','api/reconcile.ts']) {
   const src = read(f);
   assert.ok(src.includes('missingConfig()'), `${f} must guard on config`);
   assert.ok(!/(?<![\w)])db\s*\.from\(/.test(src), `${f} still uses the old eager db.from`);
@@ -189,5 +189,25 @@ assert.ok(!/fields:[^\n]*[^_]\bclicks\b(?!.*inline)/.test(spend.split('\n').find
           'spend ingest must not request bare `clicks`');
 assert.ok(spend.includes("onConflict: 'day,source,ad_id'"), 'spend upsert must be idempotent');
 
+// Reconciliation. Reads ClickBank's ledger and rewrites conversions, so it is
+// the one endpoint that could silently reverse every sale — hence the same
+// fail-closed secret gate as spend. It must never fire CAPI (ClickBank's owns
+// Purchase; a second path double-counts), and it must never persist customer
+// identity: the whitelist is the only thing standing between an orders2 row
+// and a name+email in the database.
+const recon = read('api/reconcile.ts');
+assert.ok(recon.includes('CRON_SECRET'), 'reconcile must be secret-gated');
+assert.ok(/if \(!secret\)/.test(recon), 'reconcile must fail closed on an unset secret');
+assert.ok(recon.includes('CLICKBANK_API_KEY'), 'reconcile must read the ClickBank key from env');
+assert.ok(recon.includes("role: 'AFFILIATE'"), 'reconcile must query as AFFILIATE — accountAmount is only our share in that role');
+assert.ok(recon.includes("status: 'reversed'"), 'reconcile must mark refunds reversed');
+assert.ok(!recon.includes('sendConversion'), 'reconcile must not fire CAPI — single-path rule');
+const keep = recon.match(/const KEEP = \[([^\]]*)\]/)?.[1] ?? '';
+assert.ok(keep.includes("'receipt'"), 'reconcile KEEP whitelist missing');
+for (const pii of ['email', 'firstName', 'lastName', 'fullName', 'postalCode', 'state', 'country']) {
+  assert.ok(!keep.includes(pii), `reconcile persists customer ${pii}`);
+}
+assert.ok(recon.includes('raw:            stripCustomer(o)'), 'reconcile must persist only the whitelisted order fields');
+
 console.log(`ok — ${keys.length} data-v slots, variant b overrides ${bKeys.join(', ')}, ` +
-            `${seeded.size} config keys wired, offer resolver green, pixel PageView-only, spend ingest guarded`);
+            `${seeded.size} config keys wired, offer resolver green, pixel PageView-only, spend ingest guarded, reconcile guarded`);
