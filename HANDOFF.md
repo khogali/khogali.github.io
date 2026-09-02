@@ -1340,6 +1340,31 @@ burning $2.00/click healthy. Now `0.007`, break-even **$0.40**. The config row
 carries a note explaining this so it does not get "corrected" back. Revisit
 once real CVR exists.
 
+## After the unlock, 2026-09-02 21:25 UTC — the developer account has its own lock
+
+Ahmed unlocked his Meta login (passport). `/api/spend` still returns 502
+`API access blocked`. Cause found: **`developers.facebook.com` shows a second,
+separate gate** — "Account confirmation needed. We've noticed unusual activity
+on this developer account. Please complete the confirmation steps to regain
+access." Every token minted against app `adstack` is dead until that is
+cleared. It is an identity confirmation, so it is **Ahmed's click**, not
+Claude's. Business Settings itself loads fine; the app is still assigned to
+`tcn_kho`.
+
+Also noticed: `tcn_kho`'s ad-account access now reads **Full access** where
+Claude had set **View performance** on 2026-09-01. Not changed by Claude.
+Once the token works again, trim it back to View performance (Manage →
+Partial access) — `ads_read` is all the cron needs.
+
+Order of operations after Ahmed confirms the developer account:
+1. Dashboard **Run** on `/api/spend` → expect 200 and a `spend_daily` row for
+   2026-09-02 with a real `pulled_at`.
+2. If still 502: Revoke tokens on `tcn_kho`, Generate a fresh one (`ads_read`,
+   Never), paste into Vercel, Redeploy. Ahmed generates; Claude stages.
+3. Re-authorize the Ads MCP (`/mcp` in an interactive `claude` session →
+   `meta-ads` → login). Its token expired during the lock.
+4. Trim `tcn_kho` back to View performance.
+
 ## Day 2 check, 2026-09-02 17:55 UTC — delivery near zero, system-user API blocked
 
 - **Spend today: $1.13 by 10:52 PDT**, almost all of it 5–8am on Reels/Stories
