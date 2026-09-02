@@ -44,7 +44,7 @@ anything below it; most of the file is the history of how it got here.
 | Ads | 5 stills ACTIVE: A1 `120252090124840351` · A2 `120252090130440351` · A3 `120252091576930351` · A4 `120252091584800351` · A5 `120252091590750351`. **3 videos ACTIVE** (activated 2026-09-02; V2/V3 were in Meta review at activation) — see "Video ads" below |
 | Landing page live ads hit | `/lp/default` = the **long advertorial** (11KB). Old 200-word page kept at `/lp/short` |
 | Break-even CPC | **$0.40** (`57.35 × 0.007`). Was $2.02 under a wrong CVR — see below |
-| Database | First real traffic landed. See "First pull" below. `plumbing: ok` |
+| Database | First real traffic landed; `spend_daily` written by hand via MCP. Spend at 02:10 UTC 2026-09-02: **$12.94** across the stills. `plumbing: ok` |
 | Spend feed | `/api/spend` deployed, `CRON_SECRET` + `META_AD_ACCOUNT_ID` set, **`META_ADS_TOKEN` missing**. Spend is pulled on request through the `meta-ads` MCP until then |
 
 **Daily loop:** `select * from adstack_status;` — one row. Every ad reads WAIT
@@ -136,6 +136,67 @@ hours.** Then "pull spend" and compare video vs still on CPC and click-out.
    which needs developer verification, which was blocked by contact-point
    problems. Decided 2026-09-01: **not needed now**, the MCP covers spend.
 3. **Email capture** on the LP — the one funnel piece designed but not built.
+4. **48-hour hold.** Eight ads are live (5 stills + 3 videos). Do nothing until
+   2026-09-04, then "pull spend" and read video vs still on CPC and click-out.
+   Cutting before then is cutting on noise.
+
+Higgsfield: 720 credits spent on four video renders, **1,158 remain** (Ultra).
+
+## Research findings — 2026-09-02 (what changed the plan)
+
+Done after Ahmed asked for a critique and real research, not reasoning from
+inside the session. Sources are in the chat; the conclusions that matter:
+
+**Competitor intel (Meta Ad Library, via the `meta-ads` MCP — free).**
+1,035 active US ads match "berberine patch". **Tryskintle** runs ~200 of them
+across two Pages, created within the same hour, running since 2026-08-18, every
+one a **26-second video**, same "curb cravings / no capsules" angle, straight
+to a DTC shop (`tryskintle.com`) with a 90-day guarantee. No advertorial. Their
+product is a "10-in-1 dissolvable microneedle patch" (berberine, moringa, ACV,
+magnesium, green tea, turmeric). Hormone Health Lab runs "Skip the injections —
+50% OFF", a GLP-1 angle. Re-run this search weekly; their next hook shows up
+here before it costs us.
+
+**Format.** 2026 benchmarks: video ~34% lower CPA than static on Meta; UGC-style
+beats polished (2.64% vs 1.78% CTR); static still carries 60–70% of direct-
+response conversions. Verdict: run both, which is what is now live.
+
+**Tool stack — buy nothing.** Spy tools (AdSpy, AdPlexity, Minea, Tyver) are
+$80–130/mo; the Ad Library through the MCP does the research half free.
+Foreplay/Motion are pre-/post-launch creative tools; `ugc-architect` + the
+tracker cover both. AdLibrary.com sells a €329/mo five-stage pipeline
+(research → brief → validate → launch-with-gates → monitor); every stage maps
+onto something already here. Trackers (RedTrack/Voluum) are what adstack
+replaces.
+
+**ClickBank reconciliation is buildable now.** `api.clickbank.com/rest/1.3/orders2`
+takes `type=RFND|CGBK|SALE|BILL`, `role=AFFILIATE`, `startDate`/`endDate`
+(yyyy-mm-dd). Needs `api_order_read` — exactly the scope the narrowed key has.
+Refunds and chargebacks claw commission back **weeks** after payout, and this
+is a 90-day-guarantee product: without it `ad_decisions` will scale ads that
+lost money. Build after the key is regenerated.
+
+## Skills audit — 2026-09-02
+
+Half of what was proposed to build already existed:
+
+- **`adstack-daily`** exists but is broken in two ways. Its rules **drift from
+  `config`**: it says 2×/3× payout and −40%/+25%, the SQL says $75 and
+  −30%/+30%. And steps 1 ("pull spend") and 5 ("push changes") are not wired to
+  the `meta-ads` MCP. Fix: make the skill *read* `config` and call the MCP.
+  Do not build a new `/daily`.
+- **`ugc-architect`** exists, its playbook (`.planning/PROMPT-PLAYBOOK.md`) and
+  avatar IDs exist, and it works — it produced the three video ads. **Add the
+  "Casting law" anti-likeness block to it permanently**; the V2 regen was the
+  lesson.
+- `growth`, `monetization`, `affiliate-site-builder` are iOS/SEO — irrelevant.
+
+**Revised build order** (replaces the earlier list): 1) fix `adstack-daily`
+as above; 2) reconciliation via `orders2`; 3) weekly competitor audit from
+`ads_library_search`, diffed week over week; 4) pre-flight funnel scan
+(claims, before/after, CTA depth, crawler rows — every one found by hand on
+2026-09-01); 5) email capture. Not a dashboard: `adstack_status` is one row on
+purpose.
 
 ## Where the code is
 
