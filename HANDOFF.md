@@ -40,7 +40,7 @@ anything below it; most of the file is the history of how it got here.
 | What | Value |
 |---|---|
 | Campaign | `120252090098770351` — TCN \| Purisaki \| Sales-Purchase \| v1, CBO $40/day |
-| Ad set | `120252090110050351` — US, Advantage+ Audience, age 25+ signal, OFFSITE_CONVERSIONS on PURCHASE |
+| Ad set | `120252090110050351` — US, Advantage+ Audience, age 25+ signal, OFFSITE_CONVERSIONS on PURCHASE. **Placements restricted to Facebook Feed + Instagram Feed 2026-09-02 15:00 UTC** — see "Placements restricted" |
 | Ads | 5 stills ACTIVE: A1 `120252090124840351` · A2 `120252090130440351` · A3 `120252091576930351` · A4 `120252091584800351` · A5 `120252091590750351`. **3 videos ACTIVE** (activated 2026-09-02; V2/V3 were in Meta review at activation) — see "Video ads" below |
 | Landing page live ads hit | `/lp/default` = the **long advertorial** (11KB). Old 200-word page kept at `/lp/short` |
 | Break-even CPC | **$0.40** (`57.35 × 0.007`). Was $2.02 under a wrong CVR — see below |
@@ -1339,6 +1339,46 @@ Under 3.52% the break-even CPC read **$2.02**, which would have called an ad
 burning $2.00/click healthy. Now `0.007`, break-even **$0.40**. The config row
 carries a note explaining this so it does not get "corrected" back. Revisit
 once real CVR exists.
+
+## Placements restricted to Feed — 2026-09-02 15:00 UTC (the real click-out finding)
+
+The 1.2% click-out was not mainly the CTA. It was **where Meta sent the
+clicks**. All 173 clicks to that point, by placement:
+
+| Placement | Clicks | Reached offer |
+|---|---|---|
+| Facebook Mobile Reels | 105 | 0 |
+| Audience Network | 27 | 0 |
+| Facebook Mobile Feed | 21 | **2** |
+| Right column / in-stream / other | 20 | 0 |
+
+Both click-outs ever came from Feed. Reels + Audience Network: 132 clicks, zero.
+That is not noise. The cheap video CPCs ($0.14–0.20) were cheap because Reels
+swipe-taps are worthless. Post-CTA-fix cohort: 16 clicks, 14 of them Reels/AN, 0 outs.
+
+**Change made** (Ahmed: "let's restrict the ads"): ad set `120252090110050351`
+targeting now `publisher_platforms: facebook, instagram`, `facebook_positions:
+feed`, `instagram_positions: stream`, both device platforms. Age 25–65,
+US, Advantage+ Audience unchanged. `ads_get_errors` clean, not forced to pause.
+Learning reset; nothing learned was worth keeping. Expect CPC to rise toward
+$0.40–0.80 and volume to drop hard. That is the point: the advertorial has never
+actually been read by a feed audience at volume.
+
+**Demographics** (Meta breakdown, lifetime to 15:00 UTC): 65+ took **74% of
+spend** ($25.47 of $34), 65+ women alone $21.78. Under-45 was $3.65 total, so
+an age cap would change nothing — left alone. Copy targets "after 45"; 65+ is a
+legitimate ClickBank health buyer, not a mistake.
+
+**LPV is available after all.** `landing_page_view` (from the pixel PageView)
+now reports: 100 LPVs on 131 link clicks; 65+ loaded the page 77/87 (89%).
+So the page *loads*. The drop is between load and the first CTA. What is
+missing is scroll depth / dwell per click. Cheapest diagnostic: two columns on
+`clicks` (`scroll_pct`, `dwell_s`) + a `sendBeacon` on `pagehide` to a tiny
+`/api/e`. Not built yet; build it if feed-only traffic still shows near-zero
+click-out with pages loading.
+
+**Ad-set-level LPV still cannot be the optimisation goal** (#2490408 on Sales
+objective). The metric exists; the goal does not.
 
 ## Ahmed's Meta login locked — 2026-09-02 ~05:00 UTC
 
