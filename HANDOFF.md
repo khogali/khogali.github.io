@@ -44,7 +44,7 @@ anything below it; most of the file is the history of how it got here.
 | Ads | 5 stills ACTIVE: A1 `120252090124840351` · A2 `120252090130440351` · A3 `120252091576930351` · A4 `120252091584800351` · A5 `120252091590750351`. **3 videos ACTIVE** (activated 2026-09-02; V2/V3 were in Meta review at activation) — see "Video ads" below |
 | Landing page live ads hit | `/lp/default` = the **long advertorial** (11KB). Old 200-word page kept at `/lp/short` |
 | Break-even CPC | **$0.40** (`57.35 × 0.007`). Was $2.02 under a wrong CVR — see below |
-| Database | First real traffic landed; `spend_daily` written by hand via MCP. Spend at 02:10 UTC 2026-09-02: **$12.94** across the stills. `plumbing: ok` |
+| Database | First real traffic landed; `spend_daily` written by hand via MCP. Spend at 03:06 UTC 2026-09-02: **$31.15**, videos now taking most of it. `plumbing: ok` |
 | Spend feed | `/api/spend` deployed, `CRON_SECRET` + `META_AD_ACCOUNT_ID` set, **`META_ADS_TOKEN` missing**. Spend is pulled on request through the `meta-ads` MCP until then |
 
 **Daily loop:** `select * from adstack_status;` — one row. Every ad reads WAIT
@@ -126,6 +126,49 @@ five stills; CBO will pick. Immediately after activation V1 read ACTIVE, V2
 PENDING_REVIEW, V3 IN_PROCESS — normal post-activation states, the stills went
 through the same. The stills are the control. **Do not touch anything for 48
 hours.** Then "pull spend" and compare video vs still on CPC and click-out.
+
+### Second pull — 2026-09-02 03:06 UTC, ~1h after the videos went live
+
+| | Meta | Tracker |
+|---|---|---|
+| Spend | **$31.15** | — |
+| Link clicks / tracked clicks | 118 | **151** |
+| Click-outs | — | **2 (1.3%)** |
+| Conversions | 0 | 0 |
+
+**The videos took over in under an hour.** V2 (Why Always Three): $13.66,
+493 imp, 77 link clicks, **$0.18 CPC** — more spend than any still and 4x A2's
+clicks. V1 $0.21 CPC, V3 $0.14 CPC on tiny spend. Stills: A2 $8.96 at $0.47,
+the rest starved. CBO has already picked video. All eight still read WAIT.
+
+**Click-out 1.3% was investigated, not accepted.** In order:
+1. Server path re-proven: a real click through ad URL → `/api/c` → LP → CTA →
+   `/api/go` → vendor page with `aff_sub1`, and `clicked_out` flipped.
+2. The traffic is real humans, not prefetch: V2's 88 clicks were 75 Facebook
+   in-app browser + 11 mobile browser, 77 distinct US IPs, all with `fbclid`,
+   78 with a referrer. The two who did click out took 33s and 133s.
+3. So the number is genuine: **~2% of real video visitors click any CTA.**
+4. Root cause found by rendering the page on a real iPhone 13 viewport
+   (Playwright): the "first CTA at 644px, inside the first screen" claim from
+   earlier was **desktop layout** — the browser harness silently ignores
+   viewport emulation (`innerWidth` stayed 1512) and headless Chrome floors at
+   **500px on macOS** regardless of `--window-size`. On a real 390px phone the
+   first CTA sat ~870–900px down, just under the 844px fold, and the page runs
+   **6.3 screens** long.
+5. Fix `5e6edfb`: first CTA moved directly after the lede, above the pull
+   quote. Verified on the iPhone 13 render at **~550px — fully in the first
+   screen.** CTA 2 is at ~4.4 screens, CTA 3 at ~5.4.
+
+**Lesson, permanent:** never trust the in-app browser or headless Chrome for
+mobile layout. The reliable path is
+`npx playwright screenshot --browser=chromium --viewport-size=390,844 --full-page URL out.png`
+(Chromium headless shell is installed under `~/Library/Caches/ms-playwright`;
+the iPhone device profile wants WebKit, which is not — use `--viewport-size`).
+
+**Read on the next pull:** click-out should move well above 10% for video
+traffic. If it does not, the page is too long for video-arrival mode and the
+next test is a **short bridge page for the video ads** (hook → mechanism →
+handoff, ~250 words) — not more CTAs.
 
 ### Still for Ahmed
 
