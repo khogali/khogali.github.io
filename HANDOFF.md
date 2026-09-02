@@ -1340,6 +1340,22 @@ burning $2.00/click healthy. Now `0.007`, break-even **$0.40**. The config row
 carries a note explaining this so it does not get "corrected" back. Revisit
 once real CVR exists.
 
+## Ahmed's Meta login locked — 2026-09-02 ~05:00 UTC
+
+Ahmed's personal Meta account was locked for an identity check; he expects to
+unlock it with his passport on 2026-09-03. Checked the moment he said so:
+
+- All 8 ads **ACTIVE**, `ads_get_errors` empty, spend still ticking (V2 went
+  $14.53 → $14.65 during the check). The lock is on the login, not on delivery.
+- The **spend and reconcile crons are unaffected**: they run on the system user
+  `tcn_kho` and the ClickBank key, neither of which is his login.
+- The **Ads MCP still answered**, so its user token is alive for now. If it
+  starts failing before he unlocks, that is expected — do not try to fix it, and
+  do not touch anything in Business Settings until he is back in.
+- Nothing to do. The 48-hour hold was already the plan. Watch the 08:00 UTC
+  cron log on 2026-09-03 for `GET /api/spend 200`; if delivery had been
+  restricted, spend would flatline there first.
+
 ## Meta developer account — SUPERSEDED: done 2026-09-02
 
 On 2026-09-01 this was parked ("the MCP covers spend, revisit later") because
