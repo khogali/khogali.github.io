@@ -1340,6 +1340,34 @@ burning $2.00/click healthy. Now `0.007`, break-even **$0.40**. The config row
 carries a note explaining this so it does not get "corrected" back. Revisit
 once real CVR exists.
 
+## ROOT CAUSE of the day-2 stall: ad account unsettled — 2026-09-02 22:10 UTC
+
+Opening the ad set in Ads Manager (Chrome, Ahmed's login) showed what neither
+the API nor `ads_get_errors` had surfaced: **"Payment error"** in the header,
+**"Account unsettled — This ad account has a balance that needs to be paid
+before you can publish"**, and on Publish: **"The run status of the ad account
+is not active (#1885009)"**. The ad account is not delivering because a
+charge failed. Not the placement change, not learning, not the checkpoint.
+`ads_get_errors` returns delivery errors for campaigns/ad sets/ads and
+explicitly excludes account-level restrictions — that is why it read clean.
+
+**Ahmed only:** Ads Manager → Billing & payments → **Pay now** (or fix the
+card and retry). Claude does not touch payment.
+
+**Draft waiting to publish:** placements widened to **Facebook Feed +
+Instagram Feed + Facebook Stories + Instagram Stories**, Reels and Audience
+Network still off. Saved as "Unpublished edits" on ad set `120252090110050351`;
+Publish is blocked until the balance clears. After payment: reopen the ad set
+→ Publish. (Claude can do that part.)
+
+Note for the daily loop: a flat `spend_daily` with ads ACTIVE and no errors
+means **check the account's billing status first**, before touching
+targeting. This cost half a day.
+
+This session's Ads MCP still holds an expired token even though Ahmed
+re-authorized in another session; re-auth is per session. Chrome + Ads Manager
+is the fallback and worked.
+
 ## Access restored, 2026-09-02 21:43 UTC
 
 Ahmed clicked **Confirm Account** on the developer gate. `/api/spend` → **200**
