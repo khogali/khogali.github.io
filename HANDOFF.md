@@ -1340,6 +1340,23 @@ burning $2.00/click healthy. Now `0.007`, break-even **$0.40**. The config row
 carries a note explaining this so it does not get "corrected" back. Revisit
 once real CVR exists.
 
+## Access restored, 2026-09-02 21:43 UTC
+
+Ahmed clicked **Confirm Account** on the developer gate. `/api/spend` → **200**
+immediately, no token regeneration needed; 8 rows for 2026-09-02 written with
+a real `pulled_at`. Both locks (login checkpoint, developer-account
+confirmation) are now known and both were identity checks on Ahmed, not
+anything in the stack. Token, app, system user and cron all survived.
+
+Day 2 so far (2:43pm PDT, feed-only since 8am): **$6.74**, 265 impressions,
+**4 link clicks** — A1 took $3.22 / 110 impressions / 0 clicks. Feed CPMs are
+far higher than Reels and the account is relearning; volume is 1/5 of day 1 at
+the same hour. Judge feed-only on 2026-09-03's full day, not on this.
+
+Still to do: re-authorize the Ads MCP (Ahmed, `/mcp` → `meta-ads` in an
+interactive `claude`). Ad-account access on `tcn_kho` trimmed back to View
+performance — see below.
+
 ## After the unlock, 2026-09-02 21:25 UTC — the developer account has its own lock
 
 Ahmed unlocked his Meta login (passport). `/api/spend` still returns 502
