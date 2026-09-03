@@ -1366,9 +1366,10 @@ drop the Purisaki campaign to $20/day (`daily_budget: 2000` on
 | A6 Patch Not Capsule | `120252121435940351` | `4431021983781491` | `/assets/default/ad-pills.jpg` (pill organiser, no face) | matches the rewritten headline |
 | A7 3pm Clock | `120252121436620351` | `1764178614813075` | `/assets/default/ad-clock.jpg` (the page hero) | reader quote, "not a character problem" |
 
-Left paused on purpose: Gate 1 (10 Sep) reads the rewritten page against the
-existing ads. Turn A6/A7 on if Feed CPC is still above $1 at that gate, or
-earlier if Ahmed says so. Copy for all five is in the creatives themselves
+**Activated 2026-09-03 ~04:25 UTC on Ahmed's word** ("turn on A6 and A7").
+Ten ads now share the $40 CBO: A1–A5, V1–V3, A6, A7. Expect Meta to
+redistribute toward whichever earns clicks on Feed; the old A1 ($2.86 CPC) is
+the first candidate to cut at Gate 1. Copy for all five is in the creatives themselves
 (`ads_get_creatives`) and stays inside the rails: no numeric claims, no
 before/after, no body imagery, no fear framing, no anonymity claims.
 
