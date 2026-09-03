@@ -1340,6 +1340,38 @@ burning $2.00/click healthy. Now `0.007`, break-even **$0.40**. The config row
 carries a note explaining this so it does not get "corrected" back. Revisit
 once real CVR exists.
 
+## Staged and PAUSED: PIA campaign + Purisaki creative refresh — 2026-09-03 ~04:20 UTC
+
+**PIA campaign (paused, ready for approval day):**
+
+| Object | ID | Notes |
+|---|---|---|
+| Campaign | `120252121416460351` | TCN \| PIA \| Traffic-LPV \| v1 — OUTCOME_TRAFFIC, CBO **$20/day** |
+| Ad set | `120252121423110351` | US, Advantage+ Audience (25–65 signal), **Facebook Feed only**, optimised for LANDING_PAGE_VIEWS (our pixel's PageView; Kape has no CAPI so Purchase optimisation would never learn). No `location_types`. |
+| PIA-1 Cafe Wi-Fi | `120252121435210351` | creative `1048511967818715`, image `/assets/privacy/ad-cafe.jpg` |
+| PIA-2 Airport | `120252121435460351` | creative `1362450555592754`, `/assets/privacy/ad-airport.jpg` |
+| PIA-3 Son | `120252121435760351` | creative `3175107672684612`, `/assets/privacy/ad-son.jpg` |
+
+All link to `/api/c?s=meta&lp=privacy&c={{campaign.id}}&as={{adset.id}}&ad={{ad.id}}&pl={{placement}}`.
+**Do not activate until** `OFFERS` carries the PIA link and the Kape postback is
+set — otherwise `/api/go` on `lp=privacy` falls through to `OFFER_URL` and sends
+VPN readers to the Purisaki hop. Then: activate campaign, ad set, three ads;
+drop the Purisaki campaign to $20/day (`daily_budget: 2000` on
+`120252090098770351`).
+
+**Purisaki creative refresh (paused, in the live ad set `120252090110050351`):**
+
+| Ad | ID | Creative | Image | Angle |
+|---|---|---|---|---|
+| A6 Patch Not Capsule | `120252121435940351` | `4431021983781491` | `/assets/default/ad-pills.jpg` (pill organiser, no face) | matches the rewritten headline |
+| A7 3pm Clock | `120252121436620351` | `1764178614813075` | `/assets/default/ad-clock.jpg` (the page hero) | reader quote, "not a character problem" |
+
+Left paused on purpose: Gate 1 (10 Sep) reads the rewritten page against the
+existing ads. Turn A6/A7 on if Feed CPC is still above $1 at that gate, or
+earlier if Ahmed says so. Copy for all five is in the creatives themselves
+(`ads_get_creatives`) and stays inside the rails: no numeric claims, no
+before/after, no body imagery, no fear framing, no anonymity claims.
+
 ## Landing page audit and rewrite — 2026-09-03 ~04:00 UTC
 
 Ahmed asked why people were not continuing. Measured, not guessed
