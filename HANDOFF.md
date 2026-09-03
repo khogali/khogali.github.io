@@ -1465,6 +1465,17 @@ drop the Purisaki campaign to $20/day (`daily_budget: 2000` on
 | A6 Patch Not Capsule | `120252121435940351` | `4431021983781491` | `/assets/default/ad-pills.jpg` (pill organiser, no face) | matches the rewritten headline |
 | A7 3pm Clock | `120252121436620351` | `1764178614813075` | `/assets/default/ad-clock.jpg` (the page hero) | reader quote, "not a character problem" |
 
+**A8 and A9 staged PAUSED 2026-09-03 ~05:20 UTC** from the ad-angle keyword
+runs (people say "evening" and "sugar", and berberine buyers are comparing
+brands):
+
+| Ad | ID | Creative | Image | Angle |
+|---|---|---|---|---|
+| A8 Evening Sugar Cravings | `120252122097380351` | `1437239308297677` | `/assets/default/ad-night.jpg` (night kitchen, hand, no face) | "evening sugar cravings after 45: why the capsule keeps failing" |
+| A9 Which Berberine | `120252122094060351` | `1442080307767958` | `/assets/default/ad-pills.jpg` | "which berberine? the one you don't swallow" |
+
+Turn on at Gate 1 if the current set needs help, or on Ahmed's word.
+
 **Activated 2026-09-03 ~04:25 UTC on Ahmed's word** ("turn on A6 and A7").
 Ten ads now share the $40 CBO: A1–A5, V1–V3, A6, A7. Expect Meta to
 redistribute toward whichever earns clicks on Feed; the old A1 ($2.86 CPC) is
