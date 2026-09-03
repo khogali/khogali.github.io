@@ -1415,6 +1415,17 @@ by Claude). First live run, seed "ergonomic pillow": 513 keywords, volume for
   npx tsx src/cli.ts "<seed>" --top 20 --volume` (tsx does not auto-load .env).
   Cost of that run ≈ $0.03 of the $1 starter balance.
 
+**Keyword data on the live campaign (2026-09-03, `docs/keywords-purisaki-2026-09-03.md`):**
+`berberine patch` search went 1,300/mo (Aug 2025) → 74,000 (Mar–May 2026)
+→ 33,100 (Jul 2026): a fad **55% off its peak**. ~10,000 brand searches a
+month for Purisaki at $4–5.50 CPC (someone is bidding on the brand; Orbio's
+Purisaki listing is silent on brand bidding — ask before touching). Generic
+"berberine patch reviews" 4,400/mo at $2.97. Read: the page and A6 aim at the
+questions people actually type; search is a separate build; the category
+decline argues for getting PIA live rather than leaning further into Purisaki.
+Provider fix shipped: Google Ads rejects a whole batch if one keyword is
+invalid; `searchVolume` now filters and bisects.
+
 **Merge rule of thumb:** this file is the source of truth for anything live
 (campaign, tracker, crons, offers). "Affiliate Empire" holds the strategy
 history and the SEO/keyword tooling. When the merged session sees a

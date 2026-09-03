@@ -52,24 +52,44 @@ export async function searchVolume(
 ): Promise<Map<string, VolumeData>> {
   const out = new Map<string, VolumeData>();
 
-  for (let i = 0; i < keywords.length; i += 1000) {
-    const batch = keywords.slice(i, i + 1000);
+  // Google Ads rejects the WHOLE task if any keyword breaks its rules (over 80
+  // chars, over 10 words, symbols). Filter first, and if a task still fails,
+  // bisect so one bad keyword cannot zero out the other 499.
+  const clean = keywords.filter(k => k.length <= 80 && k.split(/\s+/).length <= 10 && /^[a-z0-9' -]+$/i.test(k));
+  const dropped = keywords.length - clean.length;
+  if (dropped) console.error(`  dropped ${dropped} keyword(s) Google Ads would reject`);
+
+  async function fetchBatch(batch: string[]): Promise<void> {
+    if (batch.length === 0) return;
     const json = await post('/keywords_data/google_ads/search_volume/live', [{
       keywords: batch,
       location_code: locationCode,
       language_code: 'en',
     }]);
-
-    for (const task of json.tasks ?? []) {
-      for (const r of task.result ?? []) {
-        if (!r?.keyword) continue;
-        out.set(String(r.keyword).toLowerCase(), {
-          volume: r.search_volume ?? 0,
-          cpc: r.cpc ?? null,
-          competition: r.competition_index != null ? r.competition_index / 100 : null,
-        });
+    const task = json.tasks?.[0];
+    // The HTTP-level status can be 20000 while the task itself failed.
+    if (task && task.status_code !== 20000) {
+      if (batch.length === 1) {
+        console.error(`  volume task failed for "${batch[0]}": ${task.status_code} ${task.status_message}`);
+        return;
       }
+      const mid = Math.ceil(batch.length / 2);
+      await fetchBatch(batch.slice(0, mid));
+      await fetchBatch(batch.slice(mid));
+      return;
     }
+    for (const r of task?.result ?? []) {
+      if (!r?.keyword) continue;
+      out.set(String(r.keyword).toLowerCase(), {
+        volume: r.search_volume ?? 0,
+        cpc: r.cpc ?? null,
+        competition: r.competition_index != null ? r.competition_index / 100 : null,
+      });
+    }
+  }
+
+  for (let i = 0; i < clean.length; i += 1000) {
+    await fetchBatch(clean.slice(i, i + 1000));
   }
   return out;
 }
