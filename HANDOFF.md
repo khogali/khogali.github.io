@@ -1976,3 +1976,22 @@ where arm a loses people.
 Delivery note: Meta review held the new ads until ~12:00 PDT 03 Sep; the 3pm
 cell (`120252122478110351`) had no delivery event by 13:30 PDT. If still zero
 by 04 Sep morning, duplicate one still into it or ask Meta.
+
+## ALL PAUSED — 2026-09-03 22:40 UTC, on Ahmed's word
+
+All three campaigns PAUSED: A/B angle test `120252122473610351` (study
+`1043817225132703` still exists, will show no delivery), old CBO
+`120252090098770351`, PIA `120252121416460351`. Account spend to date
+**$61.87**, 186 human landings, 5 click-outs (2.7%), 0 sales.
+
+Why: at 2.7% click-out a sale costs ~$440–880 against a $57.35 payout. Ads
+are cheap (Feed CPC $0.17–0.63); the landing page is the leak. Verdict given:
+not viable as the funnel stands; the fix is the first screen of `lp/default`,
+informed by the beacon (`clicks.scroll_pct`, `clicks.dwell_s`, 7 rows so far:
+one cohort bounces at 0% in 4–6s, one reads to 50% for 30–60s and leaves).
+
+To resume: activate the A/B campaign only (`ads_activate_entity` on
+`120252122473610351`); ad sets and ads underneath are still ACTIVE. Stop-loss
+agreed: $150 total with zero sales, or click-out still <10% after one LP
+rebuild, → drop Purisaki and move the $40 to PIA when Kape approves.
+Crons keep running harmlessly; spend rows will be $0.
