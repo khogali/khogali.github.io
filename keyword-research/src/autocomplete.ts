@@ -1,23 +1,50 @@
 /**
- * Google Autocomplete expansion — free, no API key, no quota.
- * This is the layer that replaces most of what a paid keyword tool sells you.
+ * Multi-source autocomplete expansion. Free, no API keys, no quotas.
+ *
+ * Three sources, three different signals:
+ *   google  — general search demand
+ *   youtube — how people phrase problems (content angles)
+ *   amazon  — pure purchase intent (someone typing here is shopping)
  */
 
-const SUGGEST = 'https://suggestqueries.google.com/complete/search';
+export type Source = 'google' | 'youtube' | 'amazon';
 
-export async function suggest(query: string, opts: { hl?: string; gl?: string } = {}): Promise<string[]> {
-  const url = `${SUGGEST}?client=firefox&hl=${opts.hl ?? 'en'}&gl=${opts.gl ?? 'us'}&q=${encodeURIComponent(query)}`;
-  try {
-    const res = await fetch(url, { headers: { 'user-agent': 'Mozilla/5.0' } });
-    if (!res.ok) return [];
-    const data = await res.json();          // ["query", [suggestions], ...]
-    return Array.isArray(data?.[1]) ? data[1] : [];
-  } catch {
-    return [];
-  }
+export interface Keyword {
+  keyword: string;
+  sources: Source[];
 }
 
-/** Buyer-intent prefixes. These are where affiliate money is. */
+const SUGGEST = 'https://suggestqueries.google.com/complete/search';
+const AMAZON  = 'https://completion.amazon.com/api/2017/suggestions';
+const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/131.0 Safari/537.36';
+
+async function googleLike(query: string, ds: '' | 'yt'): Promise<string[]> {
+  const url = `${SUGGEST}?client=firefox&hl=en&gl=us${ds ? `&ds=${ds}` : ''}&q=${encodeURIComponent(query)}`;
+  try {
+    const res = await fetch(url, { headers: { 'user-agent': UA } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data?.[1]) ? data[1] : [];
+  } catch { return []; }
+}
+
+export const google  = (q: string) => googleLike(q, '');
+export const youtube = (q: string) => googleLike(q, 'yt');
+
+/** Amazon US marketplace. mid is the US marketplace id. */
+export async function amazon(query: string): Promise<string[]> {
+  const url = `${AMAZON}?mid=ATVPDKIKX0DER&alias=aps&limit=11&prefix=${encodeURIComponent(query)}`;
+  try {
+    const res = await fetch(url, { headers: { 'user-agent': UA } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data?.suggestions ?? [])
+      .filter((s: any) => s?.type === 'KEYWORD' && s?.value)
+      .map((s: any) => String(s.value));
+  } catch { return []; }
+}
+
+/** Buyer-intent prefixes — where affiliate money is. */
 const PREFIXES = [
   'best', 'top', 'cheapest', 'affordable', 'review of',
   'how to choose', 'is', 'are', 'why', 'what is the best',
@@ -26,38 +53,57 @@ const PREFIXES = [
 /** Suffixes that surface comparison and decision-stage queries. */
 const SUFFIXES = [
   'review', 'reviews', 'vs', 'alternative', 'worth it',
-  'for beginners', 'reddit', 'price', 'near me', 'discount code',
+  'for beginners', 'reddit', 'price', 'discount code',
 ];
 
 const ALPHABET = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
 export interface ExpandOptions {
-  alphabetSoup?: boolean;   // seed + each letter — slow but exhaustive
+  sources?: Source[];
+  alphabetSoup?: boolean;
   concurrency?: number;
   delayMs?: number;
 }
 
 /**
- * Expand one seed into a deduplicated keyword universe.
- * Typically returns 150-600 real queries people actually type.
+ * Expand one seed across every enabled source.
+ * Keywords found in more than one source keep all of them — that overlap
+ * is itself a signal, and the scorer uses it.
  */
-export async function expand(seed: string, opts: ExpandOptions = {}): Promise<string[]> {
-  const { alphabetSoup = true, concurrency = 5, delayMs = 120 } = opts;
+export async function expand(seed: string, opts: ExpandOptions = {}): Promise<Keyword[]> {
+  const {
+    sources = ['google', 'youtube', 'amazon'],
+    alphabetSoup = true,
+    concurrency = 5,
+    delayMs = 120,
+  } = opts;
 
   const queries: string[] = [seed];
   for (const p of PREFIXES) queries.push(`${p} ${seed}`);
   for (const s of SUFFIXES) queries.push(`${seed} ${s}`);
-  if (alphabetSoup) {
-    for (const l of ALPHABET) queries.push(`${seed} ${l}`);
+  if (alphabetSoup) for (const l of ALPHABET) queries.push(`${seed} ${l}`);
+
+  const fetchers: Record<Source, (q: string) => Promise<string[]>> = { google, youtube, amazon };
+  const merged = new Map<string, Set<Source>>();
+
+  for (const src of sources) {
+    // Amazon rate-limits harder; keep its query set to the intent-bearing ones.
+    const qs = src === 'amazon' ? queries.filter(q => !/ [a-z]$/.test(q)) : queries;
+
+    for (let i = 0; i < qs.length; i += concurrency) {
+      const batch = qs.slice(i, i + concurrency);
+      const results = await Promise.all(batch.map(q => fetchers[src](q)));
+      for (const kw of results.flat()) {
+        const k = kw.toLowerCase().trim();
+        if (!k) continue;
+        if (!merged.has(k)) merged.set(k, new Set());
+        merged.get(k)!.add(src);
+      }
+      if (delayMs) await new Promise(r => setTimeout(r, delayMs));
+    }
   }
 
-  const found = new Set<string>();
-  for (let i = 0; i < queries.length; i += concurrency) {
-    const batch = queries.slice(i, i + concurrency);
-    const results = await Promise.all(batch.map(q => suggest(q)));
-    results.flat().forEach(r => found.add(r.toLowerCase().trim()));
-    if (delayMs) await new Promise(r => setTimeout(r, delayMs));   // be polite
-  }
-
-  return [...found].filter(Boolean).sort();
+  return [...merged.entries()]
+    .map(([keyword, s]) => ({ keyword, sources: [...s] }))
+    .sort((a, b) => a.keyword.localeCompare(b.keyword));
 }

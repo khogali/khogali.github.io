@@ -18,9 +18,16 @@ async function main() {
   const asJson  = args.includes('--json');
   const topN    = parseInt(args[args.indexOf('--top') + 1] ?? '30', 10) || 30;
 
-  console.error(`expanding "${seed}" ...`);
-  const keywords = await expand(seed);
-  console.error(`found ${keywords.length} keywords`);
+  const only = args.indexOf('--sources');
+  const sources = only > -1
+    ? (args[only + 1].split(',') as any)
+    : (['google', 'youtube', 'amazon'] as any);
+
+  console.error(`expanding "${seed}" across ${sources.join(', ')} ...`);
+  const keywords = await expand(seed, { sources });
+  const bySrc = sources.map((s: string) =>
+    `${s}:${keywords.filter(k => k.sources.includes(s as any)).length}`).join('  ');
+  console.error(`found ${keywords.length} unique keywords  (${bySrc})`);
 
   let difficulties: Map<string, number> | undefined;
   if (useSerp) {
@@ -44,12 +51,18 @@ async function main() {
 
   if (asJson) { console.log(JSON.stringify(ranked, null, 2)); return; }
 
-  console.log(`\n${'SCORE'.padEnd(6)}${'INTENT'.padEnd(15)}KEYWORD`);
-  console.log('-'.repeat(78));
+  const tag = (s: string[]) =>
+    (s.includes('amazon') ? 'A' : '-') +
+    (s.includes('google') ? 'G' : '-') +
+    (s.includes('youtube') ? 'Y' : '-');
+
+  console.log(`\n${'SCORE'.padEnd(6)}${'SRC'.padEnd(6)}${'INTENT'.padEnd(15)}KEYWORD`);
+  console.log('-'.repeat(82));
   for (const r of ranked) {
     const d = r.difficulty !== undefined ? ` [KD ${r.difficulty}]` : '';
-    console.log(`${String(r.score).padEnd(6)}${r.intent.padEnd(15)}${r.keyword}${d}`);
+    console.log(`${String(r.score).padEnd(6)}${tag(r.sources).padEnd(6)}${r.intent.padEnd(15)}${r.keyword}${d}`);
   }
+  console.log('\nSRC: A=Amazon (purchase intent)  G=Google  Y=YouTube');
   console.log(`\ntop reasons: ${ranked[0]?.reasons.join(', ') ?? '—'}`);
 }
 

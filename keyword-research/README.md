@@ -6,7 +6,7 @@ Free keyword research. No Ahrefs, no API key, no quota.
 
 | Layer | Source | Works in cloud? |
 |---|---|---|
-| Keyword expansion | Google Autocomplete | ✅ yes |
+| Keyword expansion | Google + YouTube + Amazon autocomplete | ✅ yes |
 | Intent + opportunity scoring | local logic | ✅ yes |
 | SERP difficulty | Playwright scraping | ❌ **local only** |
 
@@ -24,11 +24,27 @@ npx tsx src/cli.ts "ergonomic pillow" --serp --top 40
 
 ## What it does
 
-**Expansion** takes one seed and returns 150-600 real queries by hitting Google
-Autocomplete with buyer-intent prefixes (`best`, `cheapest`, `is`, `worth it`),
-comparison suffixes (`vs`, `alternative`, `review`), and alphabet soup.
+**Expansion** takes one seed and returns 300-600 real queries across three
+autocomplete sources, each carrying a different signal:
 
-**Scoring** ranks for *affiliate value*, not volume. Commercial intent beats
+| Source | Signal |
+|---|---|
+| **Amazon** | Pure purchase intent — someone typing here is shopping |
+| **Google** | General search demand, widest coverage |
+| **YouTube** | How people phrase problems — content angles |
+
+Each is hit with buyer-intent prefixes (`best`, `cheapest`, `worth it`),
+comparison suffixes (`vs`, `alternative`, `review`), and alphabet soup.
+Keywords appearing in multiple sources keep all of them — that overlap is
+itself a ranking signal.
+
+```bash
+npx tsx src/cli.ts "ergonomic pillow" --sources google,amazon
+```
+
+**Scoring** ranks for *affiliate value*, not volume. Amazon-sourced keywords
+get the largest boost — an Amazon search box is the closest thing to a free
+purchase-intent signal that exists. Commercial intent beats
 informational every time — a 200/mo "best X for side sleepers" is worth more
 than a 5,000/mo "what is X". Long-tail, `for <audience>`, and comparison
 queries score up. `near me` scores down hard.

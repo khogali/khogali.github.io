@@ -6,6 +6,8 @@
  * query beats a 5,000-search/mo "what is X" every time.
  */
 
+import type { Keyword, Source } from './autocomplete';
+
 export type Intent = 'transactional' | 'commercial' | 'informational' | 'navigational';
 
 const TRANSACTIONAL = /\b(buy|price|pricing|cheap|cheapest|deal|deals|discount|coupon|promo|for sale|order|shop)\b/i;
@@ -28,6 +30,7 @@ const INTENT_WEIGHT: Record<Intent, number> = {
 
 export interface Scored {
   keyword: string;
+  sources: Source[];
   intent: Intent;
   words: number;
   /** 0-100. Higher = better affiliate opportunity. */
@@ -37,7 +40,7 @@ export interface Scored {
   difficulty?: number;
 }
 
-export function score(keyword: string, difficulty?: number): Scored {
+export function score(keyword: string, difficulty?: number, sources: Source[] = []): Scored {
   const kw = keyword.toLowerCase().trim();
   const intent = classify(kw);
   const words = kw.split(/\s+/).length;
@@ -64,6 +67,18 @@ export function score(keyword: string, difficulty?: number): Scored {
   // Local intent is useless for an affiliate site.
   if (/\bnear me\b/.test(kw)) { s -= 25; reasons.push('local intent — not affiliate'); }
 
+  // Amazon suggestions are pure purchase intent — someone typing into Amazon
+  // search is shopping, not browsing. Strongest free commercial signal there is.
+  if (sources.includes('amazon')) { s += 15; reasons.push('Amazon purchase intent'); }
+
+  // Appearing in more than one source means real cross-platform demand,
+  // not one engine's autocomplete quirk.
+  if (sources.length >= 2) { s += 6; reasons.push(`${sources.length} sources agree`); }
+
+  if (sources.includes('youtube') && !sources.includes('amazon')) {
+    reasons.push('YouTube content angle');
+  }
+
   if (typeof difficulty === 'number') {
     s -= difficulty * 0.4;
     reasons.push(`SERP difficulty ${difficulty}`);
@@ -71,6 +86,7 @@ export function score(keyword: string, difficulty?: number): Scored {
 
   return {
     keyword: kw,
+    sources,
     intent,
     words,
     score: Math.max(0, Math.min(100, Math.round(s))),
@@ -79,8 +95,8 @@ export function score(keyword: string, difficulty?: number): Scored {
   };
 }
 
-export function rank(keywords: string[], difficulties?: Map<string, number>): Scored[] {
+export function rank(keywords: Keyword[], difficulties?: Map<string, number>): Scored[] {
   return keywords
-    .map(k => score(k, difficulties?.get(k.toLowerCase())))
+    .map(k => score(k.keyword, difficulties?.get(k.keyword.toLowerCase()), k.sources))
     .sort((a, b) => b.score - a.score);
 }
