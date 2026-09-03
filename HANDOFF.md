@@ -42,7 +42,7 @@ anything below it; most of the file is the history of how it got here.
 | Campaign | `120252090098770351` — TCN \| Purisaki \| Sales-Purchase \| v1, CBO $40/day |
 | Ad set | `120252090110050351` — US, Advantage+ Audience, age 25–65, OFFSITE_CONVERSIONS on PURCHASE. **Placements: Facebook Feed only** since 2026-09-03 03:30 UTC (Instagram spent 82% of day 2 for 1 click) — see "Second offer staged" |
 | Ads | 5 stills ACTIVE: A1 `120252090124840351` · A2 `120252090130440351` · A3 `120252091576930351` · A4 `120252091584800351` · A5 `120252091590750351`. **3 videos ACTIVE** (activated 2026-09-02; V2/V3 were in Meta review at activation) — see "Video ads" below |
-| Landing page live ads hit | `/lp/default` = the **long advertorial** (11KB). Old 200-word page kept at `/lp/short` |
+| Landing page live ads hit | `/lp/default` = the **answer-first advertorial** (rewritten 2026-09-03, see "Landing page audit"). Long version at `/lp/long`, 200-word version at `/lp/short` |
 | Break-even CPC | **$0.40** (`57.35 × 0.007`). Was $2.02 under a wrong CVR — see below |
 | Database | `spend_daily` now written **by the cron itself** (first automated pull 04:35 UTC 2026-09-02: 8 rows, **$32.22** for day 2026-09-01). `ad_decisions` shows spend, CPC and a verdict for every ad. `plumbing: ok` |
 | Reconciliation | **LIVE 2026-09-02.** `/api/reconcile` + cron `30 8 * * *`, `CLICKBANK_API_KEY` set. First run 04:47 UTC: `refunds 0, chargebacks 0, reversed 0, sales 0, missed_inserted []` — ClickBank reached, nothing to correct yet. See "Reconciliation" below |
@@ -1339,6 +1339,51 @@ Under 3.52% the break-even CPC read **$2.02**, which would have called an ad
 burning $2.00/click healthy. Now `0.007`, break-even **$0.40**. The config row
 carries a note explaining this so it does not get "corrected" back. Revisit
 once real CVR exists.
+
+## Landing page audit and rewrite — 2026-09-03 ~04:00 UTC
+
+Ahmed asked why people were not continuing. Measured, not guessed
+(Playwright Chromium, 390×844, page served over HTTP — file:// breaks
+absolute asset paths and inflates image heights):
+
+| | Old `lp/default` (now `lp/long`) | New `lp/default` |
+|---|---|---|
+| Words | 995 | 558 |
+| Screens on a phone | 6.3 | 3.6 |
+| First mention of the product | 2,599px (3 screens down) | 426px (first screen) |
+| First CTA | 548px, outline "soft" style, "See what changed it" | 594px, solid green, "See the patch and how it works" |
+| Images | 0 | 1 hero (kitchen table, wall clock near three; no face, no body) |
+
+**What the audit found.** The ads promise "see what changed it"; the page then
+withheld the answer for three screens and offered only a secondary-styled
+button that repeated the tease. A cold feed reader who tapped for the answer
+was asked to read an essay first. Zero images meant it did not read as a
+publication. And the two feed click-outs that did happen came **~57 minutes**
+after landing (`avg_secs_to_out` 3,419s): nobody converted in-session; the
+page was parked and returned to. Also: `LP_VARIANTS` was never set, so
+variant `b` never served — the A/B did not exist. Default in `api/c.ts` is
+now `'a,b'`.
+
+**What the rewrite does.** Answer in the lede ("It is a berberine patch…"),
+mechanism in one paragraph, benefits card, then the 3pm story as support,
+honest handoff kept but shortened. Variant `b` leads with the reader's
+question. Every compliance rail intact: mechanism only, claims attributed,
+no numeric weight claims, no before/after, no body imagery, FDA/affiliate
+disclosures unchanged, pixel PageView only.
+
+**How to read the result.** Cutover ~04:10 UTC 2026-09-03, same moment as
+Feed-only placements — confounded on purpose, since both were losing. Judge
+by `tracker_health.clickout_pct` on Facebook Feed clicks after the cutover.
+Under 20% → the page is still the problem; 30%+ → it was the page all along.
+`lp/long` stays deployed for a later head-to-head if wanted.
+
+**Offer research delivered:** `docs/offer-research-2026-09-03.md` (15 ranked
+programs with verified payouts and URLs, sales-page notes on the top 5,
+rejected verticals, a do-not-touch list). Headline: medical alert (LifeFone
+$75+, Bay Alarm $65, Medical Guardian $70) is the best-fitting one-time
+vertical for this audience; Proton is the best recurring; Trust & Will the
+sleeper. Most paid-social permissions are unstated and must be confirmed
+with the affiliate manager before spend.
 
 ## Second offer staged: Private Internet Access — 2026-09-03 ~00:15 UTC
 

@@ -50,7 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const lpSlug = SLUG.test(q.lp ?? '') ? q.lp : 'default';
 
   // Weights come from env so the optimiser can shift traffic without a redeploy.
-  const variants = (process.env.LP_VARIANTS || 'a').split(',')
+  const variants = (process.env.LP_VARIANTS || 'a,b').split(',')
     .map(v => v.trim()).filter(v => SLUG.test(v));
   const variant = variants[Math.floor(Math.random() * variants.length)] || 'a';
 

@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The 3pm Window: Why Afternoon Cravings Hit Hardest After 45</title>
+<title>Why People Over 45 Are Wearing a Patch Instead of Taking Another Capsule</title>
 <meta name="robots" content="noindex,nofollow">
 
-<!-- Everything inline EXCEPT the Meta pixel. See lp/default for the reasoning:
-     without it Meta has no browser-side signal from this domain at all. -->
+<!-- Answer-first rewrite of the advertorial (2026-09-03). The 995-word version
+     is kept at lp/long. What changed and why is in HANDOFF.md ("Landing page
+     audit"). Same rules as before: pixel PageView only, #cta, cid carry-through. -->
 
 <!-- Meta pixel. PageView ONLY — never Purchase. ClickBank's server-side CAPI owns
      Purchase; firing it here too would double-count every sale. -->
@@ -25,23 +26,25 @@ src="https://www.facebook.com/tr?id=1842250187139415&ev=PageView&noscript=1"/></
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1a1a1a;background:#fff}
-.wrap{max-width:640px;margin:0 auto;padding:20px 20px 64px}
-.brand{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#6b7280;padding-bottom:14px;border-bottom:1px solid #e5e7eb;margin-bottom:22px}
-h1{font-size:31px;line-height:1.2;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
-h2{font-size:20px;font-weight:700;margin:32px 0 10px;letter-spacing:-.01em}
-p{margin-bottom:17px;font-size:17.5px}
-.kicker{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#92400e;background:#fef3c7;padding:5px 10px;border-radius:4px;margin-bottom:16px}
-.byline{font-size:14px;color:#6b7280;margin-bottom:26px;padding-bottom:18px;border-bottom:1px solid #f3f4f6}
-.cta{display:block;width:100%;text-align:center;background:#15803d;color:#fff;font-size:19px;font-weight:700;padding:18px 24px;border-radius:10px;text-decoration:none;margin:26px 0 10px;box-shadow:0 2px 0 #14532d}
+body{font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1a1a1a;background:#fff}
+.wrap{max-width:640px;margin:0 auto;padding:16px 20px 64px}
+.brand{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#6b7280;padding-bottom:10px;border-bottom:1px solid #e5e7eb;margin-bottom:16px}
+h1{font-size:28px;line-height:1.18;font-weight:800;margin-bottom:12px;letter-spacing:-.02em}
+h2{font-size:19px;font-weight:700;margin:28px 0 8px;letter-spacing:-.01em}
+p{margin-bottom:15px;font-size:17px}
+.kicker{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#92400e;background:#fef3c7;padding:4px 9px;border-radius:4px;margin-bottom:12px}
+.hero{margin:0 0 14px}.hero img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;object-position:50% 40%;border-radius:8px}
+.lede{font-size:18px;font-weight:500}
+.cta{display:block;width:100%;text-align:center;background:#15803d;color:#fff;font-size:19px;font-weight:700;padding:17px 22px;border-radius:10px;text-decoration:none;margin:20px 0 8px;box-shadow:0 2px 0 #14532d}
 .cta:active{transform:translateY(1px);box-shadow:none}
-.cta-soft{background:#fff;color:#15803d;border:2px solid #15803d;box-shadow:none;font-size:17px;padding:14px 20px}
-.sub{text-align:center;font-size:13px;color:#6b7280;margin-bottom:30px}
-.proof{border-left:3px solid #15803d;padding:15px 17px;background:#f0fdf4;margin:24px 0;font-size:16.5px}
-.aside{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px 18px;margin:26px 0;font-size:16px}
-.aside strong{display:block;margin-bottom:6px;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:#6b7280}
-ul{margin:0 0 18px 22px}li{margin-bottom:10px;font-size:17.5px}
-footer{border-top:1px solid #e5e7eb;margin-top:44px;padding-top:18px;font-size:12.5px;color:#6b7280}
+.sub{text-align:center;font-size:13px;color:#6b7280;margin-bottom:24px}
+.card{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px 18px;margin:20px 0}
+.card strong{display:block;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#166534;margin-bottom:8px}
+.card ul{margin:0 0 0 20px}.card li{margin-bottom:8px;font-size:16.5px}
+.proof{border-left:3px solid #15803d;padding:12px 15px;background:#f9fafb;margin:18px 0;font-size:16px;color:#374151}
+.aside{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px;margin:22px 0;font-size:15.5px}
+.aside strong{display:block;margin-bottom:5px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#6b7280}
+footer{border-top:1px solid #e5e7eb;margin-top:40px;padding-top:16px;font-size:12.5px;color:#6b7280}
 footer a{color:#6b7280}
 footer p{font-size:12.5px;margin-bottom:10px}
 </style>
@@ -51,117 +54,75 @@ footer p{font-size:12.5px;margin-bottom:10px}
 
   <div class="brand">The Cravings Note</div>
 
-  <span class="kicker" data-v="kicker">Daily routine</span>
+  <span class="kicker" data-v="kicker">Afternoon cravings</span>
 
-  <h1 data-v="headline">The 3pm window: why afternoon cravings hit hardest after 45</h1>
+  <h1 data-v="headline">Why people over 45 are wearing a patch instead of taking another capsule</h1>
 
-  <p class="byline" data-v="byline">A longer read on appetite, routine, and the hour where
-  most plans quietly fall apart.</p>
+  <figure class="hero">
+    <img src="/assets/default/hero.jpg" width="1280" height="832"
+         alt="A kitchen table in the afternoon: reading glasses, a folded newspaper, a mug, and a wall clock near three"
+         fetchpriority="high">
+  </figure>
 
-  <p data-v="lede">If your willpower feels fine all morning and then collapses somewhere
-  between two and four in the afternoon, that is not a character problem. It is the single
-  most common pattern readers describe to us, and it has far more to do with routine than
-  with resolve.</p>
+  <p class="lede" data-v="lede">It is a berberine patch. You put it on in the morning, it releases
+  through the skin over the day, and there is nothing to remember at three in the afternoon,
+  which is exactly when most people stop remembering.</p>
 
-  <a class="cta cta-soft" href="/api/go" data-v="cta1">See what changed it &rarr;</a>
-  <p class="sub">Or keep reading &middot; about three minutes</p>
+  <a class="cta" href="/api/go" data-v="cta1">See the patch and how it works &rarr;</a>
+  <p class="sub">Two-minute read on the company's page &middot; it is a sales page, and we say so below</p>
 
-  <p>We hear a version of the same message most weeks. It arrives phrased almost
-  identically every time, which is usually a sign that something structural is going on
-  rather than something personal.</p>
+  <h2>Why a patch, in one paragraph</h2>
+
+  <p>Berberine is a plant compound that has been studied for a long time in metabolic and
+  weight-management contexts. Its well-known problem is not whether it does anything. It is
+  that swallowing it works poorly: oral berberine has famously low absorption and is hard on
+  the stomach, which is why people who try the capsules tend to quit them. A skin patch
+  bypasses the gut and releases gradually over hours instead of all at once. That is the
+  whole argument, and it is at least a coherent one.</p>
+
+  <div class="card">
+    <strong>What people say they like about it</strong>
+    <ul>
+      <li>Nothing to swallow, nothing to remember mid-afternoon</li>
+      <li>Easier on the stomach than the capsule version</li>
+      <li>One patch in the morning; it is simply already running by three o'clock</li>
+    </ul>
+  </div>
+
+  <h2>Why three o'clock</h2>
+
+  <p>If your willpower is fine all morning and collapses somewhere between two and four,
+  that is not a character problem. It is the most common pattern readers describe to us,
+  phrased almost identically every time.</p>
 
   <div class="proof">
     “I am fine until mid-afternoon. Genuinely fine. Then somewhere around three I am
     standing in the kitchen eating something I did not decide to eat.”
   </div>
 
-  <h2>It is not a discipline problem</h2>
+  <p>The people who changed it rarely say they decided harder. They say they put something
+  in place that did not need a decision, so it worked on the tired days too. That is the
+  appeal of the patch: it asks nothing of you in the hour you have the least left to give.</p>
 
-  <p>The people who write to us are not undisciplined. They tend to be the opposite. They
-  have usually done several rounds of the obvious advice already: smaller portions, cleaner
-  breakfasts, more water, keeping the snacks out of the house. Most have tracked calories
-  at some point. Many have done it successfully, for a while.</p>
-
-  <p>What they describe is not a failure of effort. It is that the effort has to be
-  re-spent every single afternoon, and some afternoons there is nothing left to spend. A
-  hard day at work, a bad night's sleep, one skipped lunch, and the plan that worked for
-  three weeks stops working at 3:15.</p>
-
-  <h2>What most advice gets wrong</h2>
-
-  <p>Almost all of it starts at the plate. Eat less of this, more of that, swap the crisps
-  for almonds. It treats the afternoon as a decision you make badly and tries to improve
-  the decision.</p>
-
-  <p>But ask people who have actually changed the pattern and they rarely talk about the
-  food first. They talk about the moment before it — the stretch of afternoon where the
-  decision gets made — and about having something steady already in place before that
-  window opens.</p>
-
-  <ul>
-    <li>The window is predictable, which is exactly what makes it plannable</li>
-    <li>A routine you can keep on a busy day beats one you keep on a good day</li>
-    <li>Consistency is the variable almost everyone underestimates</li>
-  </ul>
-
-  <p>That last point is the one that tends to land. Nothing works if it only works on the
-  days you are already doing well.</p>
-
-  <h2>The part that tends to change things</h2>
-
-  <p>The shift most people describe is unglamorous: they stopped trying to win the
-  afternoon by deciding harder, and put something in place that did not require a decision
-  at all. Something that was simply already running by the time three o'clock arrived.</p>
-
-  <p>That is the appeal behind an approach that has been getting attention lately — a
-  plant-derived compound delivered through a skin patch rather than a capsule. It has been
-  studied in weight-management contexts, and the reason people mention it is less about
-  what it contains than about the fact that it asks nothing of you during the window when
-  you have the least left to give.</p>
-
-  <h2>Why a patch rather than a pill</h2>
-
-  <p>This is the part worth understanding, because it is the actual argument being made
-  and it is easy to miss underneath the marketing.</p>
-
-  <p>The compound involved is berberine, a plant alkaloid that has been studied for a long
-  time in metabolic contexts. Its well-documented practical problem is not whether it does
-  anything — it is that swallowing it works poorly. Oral berberine has famously low
-  bioavailability, and it is known for being hard on the digestive system, which is why
-  people who try the capsules often stop taking them.</p>
-
-  <p>The argument for a transdermal patch is that it sidesteps that specific problem.
-  Delivering a compound through the skin bypasses the digestive tract entirely, and
-  releases it gradually over hours rather than all at once. Whether that produces a
-  meaningful difference for any individual is exactly the sort of thing you should read
-  the company's own evidence on and judge for yourself — but the reasoning is at least
-  coherent, and it explains why the format exists at all.</p>
-
-  <a class="cta" href="/api/go" data-v="cta2">See how the delivery method works &rarr;</a>
-  <p class="sub">The company's write-up &middot; it is a sales page, and we say so below</p>
+  <a class="cta" href="/api/go" data-v="cta2">See the patch and how it works &rarr;</a>
+  <p class="sub">The company's write-up &middot; about two minutes</p>
 
   <div class="aside">
     <strong>What we are not saying</strong>
-    We are not telling you this works, and we have no way of knowing whether it would do
-    anything for you specifically. Individual experiences vary enormously and nothing here
-    has been evaluated by the FDA. What we can say is that the mechanism is a real one and
-    the reasoning behind the format is worth reading before you decide.
+    We are not telling you this works, and we cannot know whether it would do anything for
+    you. Individual experiences vary, and nothing here has been evaluated by the FDA. The
+    mechanism is real and the reasoning behind the format is worth reading before you decide.
   </div>
 
-  <h2>Where to read the rest</h2>
+  <h2>Fair warning about the next page</h2>
 
-  <p>The company has published a longer write-up covering the compound, the delivery
-  method and the studies they lean on.</p>
+  <p>It is a sales page. It has the discount, the countdown, the whole performance. The
+  section explaining how the patch delivers the compound is the clearest write-up of it we
+  have found, and it takes two minutes. Read that part, ignore the rest, and make your own
+  call.</p>
 
-  <p><strong>Fair warning, because we would rather you hear it from us:</strong> it reads
-  like a sales page, because it is one. It has the headline, the discount, the whole
-  performance. If that is not your thing, we understand — but the section explaining how
-  the delivery method actually works is genuinely the clearest write-up of it we have
-  found, and it takes about three minutes. Read that part, ignore the rest, and make your
-  own call.</p>
-
-  <a class="cta" id="cta" href="/api/go" data-v="cta">See how the delivery method works &rarr;</a>
-  <p class="sub" data-v="sub">About a three-minute read &middot; It is a sales page, and we said so</p>
+  <a class="cta" id="cta" href="/api/go" data-v="cta">See the patch and how it works &rarr;</a>
+  <p class="sub" data-v="sub">Two-minute read &middot; It is a sales page, and we said so</p>
 
   <footer>
     <p><strong>Advertising disclosure:</strong> this page is advertising. We may be
@@ -179,25 +140,20 @@ footer p{font-size:12.5px;margin-bottom:10px}
 </div>
 
 <script>
-// Variant copy. Inline on purpose: an external file would add the network request
-// this page exists to avoid. Keys must match a data-v attribute above; anything
-// omitted falls through to the markup.
-//
-// Both arms stay clear of numeric weight-loss claims, before/after framing and
-// institutional name-drops. This is the one surface we control and the only one
-// that is defensible in a policy review.
+// Variant copy. Both arms name the product in the first screen; they differ in
+// whether the headline leads with the format (a) or the reader's question (b).
+// Still no numeric weight claims, no before/after, no institution name-drops.
 window.VARIANTS = {
   a: {
-    // control — the routine/timing angle above
+    // control — format-first headline above
   },
   b: {
     kicker: 'Reader question',
-    headline: 'The 3pm question almost everyone over 45 asks eventually',
-    byline: 'One reader’s question, and the pattern underneath it.',
-    lede: '“I am fine until mid-afternoon. Then I am not.” It is the single most common '
-        + 'message we get, phrased almost identically every time. Here is what is actually '
-        + 'going on in that window, and what people who changed it did differently.',
-    cta: 'See what they changed &rarr;'
+    headline: '“Is there anything for the 3pm cravings that I don’t have to remember to take?”',
+    lede: 'There is, and it is a berberine patch. On in the morning, releasing through the '
+        + 'skin over the day, nothing to remember at three o’clock, which is exactly when '
+        + 'most people stop remembering.',
+    cta1: 'See what she was sent &rarr;'
   }
 };
 </script>
