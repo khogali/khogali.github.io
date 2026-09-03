@@ -1397,6 +1397,24 @@ docs). Everything in this file after "LIVE" happened here, not there.
 - The other session cannot re-authorise `meta-ads` for this one; MCP auth is
   per session.
 
+**DataForSEO is live (2026-09-03 ~05:10 UTC).** `keyword-research/.env` holds
+`DATAFORSEO_LOGIN` / `DATAFORSEO_PASSWORD` (Ahmed's, gitignored, never read
+by Claude). First live run, seed "ergonomic pillow": 513 keywords, volume for
+180, parser worked first time. What it showed:
+- Generic pillow search is expensive: "best ergonomic pillow" 1,300/mo at
+  $2.97 CPC; "best pillows side sleepers" 74,000/mo at $3.24; side-sleeper
+  and neck-pain long-tails $3.40–3.80. Against Derila's ~$54 payout that
+  needs 5–7% of clicks to buy — a search-intent page can do that, a cold page
+  cannot. Search is a Derila play only with a review/comparison page, not
+  with the advertorial.
+- The big number is **brand search**: "derila ergo pillow review(s)" 18,100/mo
+  at $2.27, "derila ergo pillow price" 480/mo transactional. Orbio's listing
+  says **NO BRAND BIDDING**, so this is organic/YouTube territory (a real
+  review page ranking for it), never a paid keyword.
+- Run it with: `cd keyword-research && set -a && source .env && set +a &&
+  npx tsx src/cli.ts "<seed>" --top 20 --volume` (tsx does not auto-load .env).
+  Cost of that run ≈ $0.03 of the $1 starter balance.
+
 **Merge rule of thumb:** this file is the source of truth for anything live
 (campaign, tracker, crons, offers). "Affiliate Empire" holds the strategy
 history and the SEO/keyword tooling. When the merged session sees a
