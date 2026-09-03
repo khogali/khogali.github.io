@@ -58,6 +58,17 @@ const SUFFIXES = [
 
 const ALPHABET = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
+/**
+ * Amazon-specific modifiers. Shoppers type differently than searchers —
+ * they qualify by audience, quantity, material and price rather than
+ * asking questions.
+ */
+const AMAZON_MODS = [
+  'for men', 'for women', 'for kids', 'for adults', 'for travel',
+  'for side sleepers', 'set', 'pack', 'with', 'cheap', 'best',
+  'memory foam', 'cooling', 'adjustable', 'large', 'small',
+];
+
 export interface ExpandOptions {
   sources?: Source[];
   alphabetSoup?: boolean;
@@ -83,12 +94,18 @@ export async function expand(seed: string, opts: ExpandOptions = {}): Promise<Ke
   for (const s of SUFFIXES) queries.push(`${seed} ${s}`);
   if (alphabetSoup) for (const l of ALPHABET) queries.push(`${seed} ${l}`);
 
+  // Amazon gets its own query set: shopping modifiers plus alphabet soup,
+  // which is how sellers actually mine that box.
+  const amazonQueries: string[] = [seed];
+  for (const m of AMAZON_MODS) amazonQueries.push(`${seed} ${m}`);
+  for (const p of ['best', 'cheap', 'top rated']) amazonQueries.push(`${p} ${seed}`);
+  if (alphabetSoup) for (const l of ALPHABET) amazonQueries.push(`${seed} ${l}`);
+
   const fetchers: Record<Source, (q: string) => Promise<string[]>> = { google, youtube, amazon };
   const merged = new Map<string, Set<Source>>();
 
   for (const src of sources) {
-    // Amazon rate-limits harder; keep its query set to the intent-bearing ones.
-    const qs = src === 'amazon' ? queries.filter(q => !/ [a-z]$/.test(q)) : queries;
+    const qs = src === 'amazon' ? amazonQueries : queries;
 
     for (let i = 0; i < qs.length; i += concurrency) {
       const batch = qs.slice(i, i + concurrency);

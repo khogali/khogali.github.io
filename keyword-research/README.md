@@ -53,8 +53,23 @@ queries score up. `near me` scores down hard.
 whether Reddit and Quora rank (a soft SERP you can beat), and whether a few
 domains own everything. Not a vendor's black box — just who you'd compete with.
 
-## Adding Google Ads volume later
+## Real volume and SERP difficulty — DataForSEO
 
-Keyword Planner gives real search volume free with a Google Ads developer token.
-Add it as a third signal alongside intent and difficulty — the scoring function
-already accepts external inputs.
+```bash
+cp .env.example .env      # add DATAFORSEO_LOGIN and DATAFORSEO_PASSWORD
+npx tsx src/cli.ts "ergonomic pillow" --volume --serp
+```
+
+About **$0.60 per 1,000 queries** — the same underlying data behind Ahrefs and
+Semrush, without a $129/month dashboard. Unlike scraping, it works from any IP,
+so difficulty scoring runs in automation rather than only on your laptop.
+
+Two extra signals enter the score:
+
+- **Search volume** adjusts intent, never overrides it. A 200/mo buying query
+  still beats a 20,000/mo "what is" query.
+- **CPC** is the market pricing commercial value for you. Advertisers paying
+  $3 a click have already proved the keyword converts.
+
+Everything degrades gracefully — without credentials the tool runs on the free
+sources and simply omits volume.

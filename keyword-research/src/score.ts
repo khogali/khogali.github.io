@@ -31,6 +31,9 @@ const INTENT_WEIGHT: Record<Intent, number> = {
 export interface Scored {
   keyword: string;
   sources: Source[];
+  /** Real monthly searches, when a volume provider supplied it. */
+  volume?: number;
+  cpc?: number | null;
   intent: Intent;
   words: number;
   /** 0-100. Higher = better affiliate opportunity. */
@@ -40,7 +43,15 @@ export interface Scored {
   difficulty?: number;
 }
 
-export function score(keyword: string, difficulty?: number, sources: Source[] = []): Scored {
+export interface Extras {
+  difficulty?: number;
+  sources?: Source[];
+  volume?: number;
+  cpc?: number | null;
+}
+
+export function score(keyword: string, extras: Extras = {}): Scored {
+  const { difficulty, sources = [], volume, cpc } = extras;
   const kw = keyword.toLowerCase().trim();
   const intent = classify(kw);
   const words = kw.split(/\s+/).length;
@@ -84,9 +95,28 @@ export function score(keyword: string, difficulty?: number, sources: Source[] = 
     reasons.push(`SERP difficulty ${difficulty}`);
   }
 
+  // Volume adjusts intent — it never overrides it. A 200/mo buying query
+  // is still worth more than a 20,000/mo "what is" query.
+  if (typeof volume === 'number') {
+    if (volume === 0)        { s -= 30; reasons.push('no measurable volume'); }
+    else if (volume < 50)    { s -= 15; reasons.push(`thin volume (${volume}/mo)`); }
+    else if (volume < 200)   { s -= 4;  reasons.push(`${volume}/mo`); }
+    else if (volume < 2000)  { s += 8;  reasons.push(`${volume}/mo`); }
+    else                     { s += 12; reasons.push(`${volume}/mo — high demand`); }
+  }
+
+  // High CPC means advertisers are paying real money for this click.
+  // That is the market pricing commercial value for you, free.
+  if (typeof cpc === 'number' && cpc >= 1) {
+    s += Math.min(10, cpc * 2);
+    reasons.push(`$${cpc.toFixed(2)} CPC — advertisers bid here`);
+  }
+
   return {
     keyword: kw,
     sources,
+    volume,
+    cpc,
     intent,
     words,
     score: Math.max(0, Math.min(100, Math.round(s))),
@@ -95,8 +125,23 @@ export function score(keyword: string, difficulty?: number, sources: Source[] = 
   };
 }
 
-export function rank(keywords: Keyword[], difficulties?: Map<string, number>): Scored[] {
+export interface VolumeLike { volume: number; cpc: number | null }
+
+export function rank(
+  keywords: Keyword[],
+  difficulties?: Map<string, number>,
+  volumes?: Map<string, VolumeLike>,
+): Scored[] {
   return keywords
-    .map(k => score(k.keyword, difficulties?.get(k.keyword.toLowerCase()), k.sources))
+    .map(k => {
+      const key = k.keyword.toLowerCase();
+      const v = volumes?.get(key);
+      return score(k.keyword, {
+        difficulty: difficulties?.get(key),
+        sources: k.sources,
+        volume: v?.volume,
+        cpc: v?.cpc,
+      });
+    })
     .sort((a, b) => b.score - a.score);
 }
