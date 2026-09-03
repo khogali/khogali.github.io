@@ -68,3 +68,18 @@ cannot.
    Purisaki scale-up as short-lived.
 
 Reproduce: `cd keyword-research && set -a && source .env && set +a && npx tsx src/cli.ts "berberine patch" --top 25 --volume`
+
+## Ad-angle runs (language mining for Facebook copy), same day
+
+| Seed | What people actually type | Volume/mo |
+|---|---|---|
+| afternoon cravings | "what causes sugar cravings" 1,300 · "evening sugar cravings" 1,000 · "is eating at night bad" 1,000 · "best food for cravings" 10 | almost nobody says "afternoon" or "3pm"; they say **sugar** and **evening/night** |
+| berberine side effects | "berberine weight loss reviews" 3,600 · "best berberine" 2,400 · "berberine reviews" 2,400 · "best brand of berberine" 1,600 · "what is the best berberine" 210 | the buyer is comparing **which berberine**, not whether; "reviews" and "best brand" dominate |
+| vpn for seniors | "best vpn for seniors" 0 · "which vpn is best and cheap" 10 | nobody searches by age; the word "seniors" stays out of the ads |
+| public wifi safe | "dangers of public wifi" 320 · "is public wifi safe" 260 · "is it safe to use public wifi" 210 · "how to use public wifi safely" 140 · "public wifi security" 140 ($7.45 CPC) | the question is asked in exactly our words; modest volume, which is fine for an interruption angle |
+
+Implications for the ads: (1) test an "evening sugar cravings" arm — our
+"3pm" framing may be narrower than the audience's own timing; (2) a
+"which berberine" comparison arm, since the market is at the choosing stage;
+(3) PIA copy already matches the phrasing people use ("is public Wi-Fi safe");
+keep "seniors" and "over 50" out of headlines where possible.

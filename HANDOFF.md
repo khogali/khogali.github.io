@@ -1426,6 +1426,14 @@ decline argues for getting PIA live rather than leaning further into Purisaki.
 Provider fix shipped: Google Ads rejects a whole batch if one keyword is
 invalid; `searchVolume` now filters and bisects.
 
+**Ad-angle keyword runs (2026-09-03):** people type "sugar cravings" and
+"evening/night", not "afternoon" or "3pm" (1,300 + 1,000/mo vs ~0); berberine
+buyers are at the *which one* stage ("best berberine" 2,400, "reviews" 2,400,
+"best brand" 1,600); "is public wifi safe" is asked in our exact words
+(260/mo); nobody searches "vpn for seniors". Proposed next ads, not built:
+A8 "evening sugar cravings" arm, A9 "which berberine" comparison arm. Detail
+in `docs/keywords-purisaki-2026-09-03.md`.
+
 **Merge rule of thumb:** this file is the source of truth for anything live
 (campaign, tracker, crons, offers). "Affiliate Empire" holds the strategy
 history and the SEO/keyword tooling. When the merged session sees a
