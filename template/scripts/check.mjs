@@ -95,6 +95,12 @@ assert.equal(resolveOffer('derila-sleep.com:443', env).name, 'derila', 'port not
 assert.equal(resolveOffer('purisaki-trial.com', env).name, 'purisaki');
 assert.equal(resolveOffer('unknown.com', env).name, 'fallback', 'unknown host must fall back');
 assert.equal(resolveOffer(undefined, env).name, 'fallback');
+// A landing-page slug key wins over the host, so a second offer can run on the
+// shared domain before it has a burner domain of its own.
+const envLp = { OFFERS: JSON.stringify({ 'thecravingsnote.com': { name: 'purisaki', url: 'https://p' }, privacy: { name: 'pia', url: 'https://pia?subid={subid}' } }) };
+assert.equal(resolveOffer('thecravingsnote.com', envLp, 'privacy').name, 'pia', 'lp slug must win over host');
+assert.equal(resolveOffer('thecravingsnote.com', envLp, 'default').name, 'purisaki', 'unknown slug must fall back to host');
+assert.equal(resolveOffer('thecravingsnote.com', envLp, 'evil.com').name, 'purisaki', 'a dotted lp must never be used as a key');
 // A malformed OFFERS must degrade to the single-offer vars, never take the funnel down.
 assert.equal(resolveOffer('derila-sleep.com', { OFFERS: '{not json', OFFER_URL: 'https://f', OFFER_NAME: 'f' }).name, 'f');
 assert.equal(resolveOffer('derila-sleep.com', {}), null, 'no config must be null, not a crash');

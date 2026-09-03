@@ -24,18 +24,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // round trip. UUID-gated because click_id is a uuid column and a junk cid
   // would error the query rather than just miss.
   let fbclid: string | null = null;
+  let lpSlug: string | null = null;
   if (UUID.test(cid)) {
     const { data, error } = await db().from('clicks')
       .update({ clicked_out: true, clicked_out_ts: new Date().toISOString() })
       .eq('click_id', cid)
-      .select('fbclid')
+      .select('fbclid, lp_slug')
       .maybeSingle();
     if (error) console.error('clickout failed', error);
     fbclid = data?.fbclid ?? null;
+    lpSlug = data?.lp_slug ?? null;
   }
 
-  // Which offer depends on which burner domain this request came in on.
-  const offer = resolveOffer(req.headers.host as string | undefined);
+  // Which offer depends on the landing page the click was recorded on, then
+  // on which burner domain this request came in on.
+  const offer = resolveOffer(req.headers.host as string | undefined, process.env, lpSlug);
   if (!offer) return res.status(500).send('no offer configured for this host');
 
   res.setHeader('Cache-Control', 'no-store');

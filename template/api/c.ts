@@ -56,7 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Same host-to-offer map /api/go uses, so a click is stamped with the offer
   // it will actually be sent to rather than one inferred later.
-  const offer = resolveOffer(req.headers.host as string | undefined);
+  const offer = resolveOffer(req.headers.host as string | undefined, process.env, lpSlug);
 
   let data: { click_id?: string } | null = null;
   let error: unknown = null;

@@ -40,7 +40,7 @@ anything below it; most of the file is the history of how it got here.
 | What | Value |
 |---|---|
 | Campaign | `120252090098770351` — TCN \| Purisaki \| Sales-Purchase \| v1, CBO $40/day |
-| Ad set | `120252090110050351` — US, Advantage+ Audience, age 25–65, OFFSITE_CONVERSIONS on PURCHASE. **Placements: Facebook Feed + Instagram Feed + Facebook Stories + Instagram Stories** (Reels and Audience Network off) since 2026-09-02 22:38 UTC — see "FIXED" and "Placements restricted" |
+| Ad set | `120252090110050351` — US, Advantage+ Audience, age 25–65, OFFSITE_CONVERSIONS on PURCHASE. **Placements: Facebook Feed only** since 2026-09-03 03:30 UTC (Instagram spent 82% of day 2 for 1 click) — see "Second offer staged" |
 | Ads | 5 stills ACTIVE: A1 `120252090124840351` · A2 `120252090130440351` · A3 `120252091576930351` · A4 `120252091584800351` · A5 `120252091590750351`. **3 videos ACTIVE** (activated 2026-09-02; V2/V3 were in Meta review at activation) — see "Video ads" below |
 | Landing page live ads hit | `/lp/default` = the **long advertorial** (11KB). Old 200-word page kept at `/lp/short` |
 | Break-even CPC | **$0.40** (`57.35 × 0.007`). Was $2.02 under a wrong CVR — see below |
@@ -1339,6 +1339,52 @@ Under 3.52% the break-even CPC read **$2.02**, which would have called an ad
 burning $2.00/click healthy. Now `0.007`, break-even **$0.40**. The config row
 carries a note explaining this so it does not get "corrected" back. Revisit
 once real CVR exists.
+
+## Second offer staged: Private Internet Access — 2026-09-03 ~00:15 UTC
+
+**Placements now Facebook Feed only** (ad set `120252090110050351`, changed
+2026-09-03 ~03:30 UTC via MCP after day 2 showed Instagram taking 82% of spend
+for 1 click on 428 impressions while Facebook Feed produced 2 clicks on 33).
+
+**Second offer chosen: Private Internet Access (PIA)** via Kape's affiliate
+network (`affiliates.kape.com`). Ahmed submitted the application 2026-09-02
+~23:40 PDT; approval typically 1–2 days. Why PIA over ClickBank alternatives
+and NordVPN: residual (33% on new and recurring for the customer's lifetime),
+direct program with postback support, halal-clean, no health-claim exposure,
+and a cold-feed-friendly angle for the same 45–65 audience. Break-even CPC
+roughly $0.35–0.45. Proton VPN was the runner-up (40% annual + 30% renewals,
+direct program) and Aura ($65 flat, identity theft) the non-residual option.
+Plan: split the same $40 — Purisaki $20/day, PIA $20/day, both Facebook Feed.
+
+**Landing page built:** `template/lp/privacy/index.html`, live at
+`/lp/privacy`. Same skeleton as `lp/default` (pixel PageView only, `#cta`,
+cid carry-through, variants a/b). Angle: "the one phone setting people over 50
+are quietly turning on" — who can see your browsing (the network you join, and
+US ISPs, legally, since the 2017 repeal), why password advice does not cover
+it, what a VPN does and does not do, why PIA (court-tested no-logs, open-source
+apps, outside audit — all attributed to the company / public record). No fear
+framing, no anonymity claims, honest handoff ("it is a sales page with a
+timer; ignore the timer"). Verified at 390px in Playwright Chromium: first CTA
+at 602px (inside the first screen), page 4,990px.
+
+**Resolver extended so two offers share one domain.** `OFFERS` keys may now
+be a landing-page slug as well as a host; slug wins (`lib/offers.ts`).
+`/api/c` stamps the click's offer by slug, `/api/go` reads the click's
+`lp_slug` back and resolves the same way. `check.mjs` covers slug-over-host,
+unknown-slug fallback and the dotted-slug guard. Purisaki keeps working
+untouched through `OFFER_URL`.
+
+**Still to do when Kape approves (Claude can do all of it, nothing is a secret):**
+1. Vercel env `OFFERS` = `{"privacy":{"name":"pia","url":"<PIA tracking link with sub-ID macro as {subid}>"}}`
+   (Purisaki stays on `OFFER_URL`), Redeploy.
+2. Kape postback: point it at
+   `https://thecravingsnote.com/api/pb?subid={sub-id macro}&payout={payout macro}&txn={transaction macro}&network=kape&offer=pia&k=<POSTBACK_SECRET>`.
+   Reconciliation for Kape is a later build; the postback is enough to start.
+3. Two or three feed creatives (stills; the "reader question" and "one
+   setting" hooks), a new campaign at $20/day CBO, Facebook Feed only, and
+   Purisaki's campaign budget down to $20/day.
+4. Kape has no Meta CAPI. If PIA sales land, `lib/capi.ts` can fire Purchase
+   for `network=kape` only — a second-offer decision, not to be taken by default.
 
 ## FIXED 2026-09-02 22:38 UTC — targeting rewritten via a second session, Feed + Stories live
 
