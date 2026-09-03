@@ -1340,6 +1340,68 @@ burning $2.00/click healthy. Now `0.007`, break-even **$0.40**. The config row
 carries a note explaining this so it does not get "corrected" back. Revisit
 once real CVR exists.
 
+## Session lineage and merge brief — read before merging with "Affiliate Empire"
+
+Ahmed intends to merge this session with the cloud session **"Affiliate
+Empire"** (`claude.ai/code/session_01V5Y7Ccrg3vuxj6xCseFSv2`, Opus 5, repo
+`khogali/khogali.github.io`). Studied on 2026-09-03. It is this session's
+**parent**: it built the original adstack tracker (schema, `/api/c`, `/api/go`,
+`/api/pb` with Meta CAPI, `lp/default`), pushed `adstack-main`, then scaffolded
+the plugin (`adstack-offer`, `adstack-lp`, `adstack-daily` skills + guardrail
+docs). Everything in this file after "LIVE" happened here, not there.
+
+**What that session established that still stands**
+- The strategic framing: paid affiliate = payout × CVR − CPC; software is a
+  multiplier on offer selection and creative, not a substitute. Guardrail:
+  never kill on thin data (min spend + min clicks before any action).
+- Its honest critiques, which Ahmed accepted the risk on: paid media
+  part-time from zero is the highest-variance path; "sell the tracker as a
+  product" and "use the telecom/NEMT edge" were its ranked alternatives.
+- Ahmed's stated **output preference for that chat**: TL;DR → ⚠️ Critique →
+  ✅ Better (ranked, pick named) → 🔨 Built → → Next; short paragraphs, bold
+  leads. He also asked it to "always critique every input and output and
+  provide better alternative options." That is a preference worth carrying
+  into the merged session, even though this session runs a different
+  register.
+- MaxBounty rejected him (no provable traffic). It steered him to
+  ClickBank/Digistore24 open signup — which is how Purisaki happened here.
+
+**What is stale or wrong there, superseded by this session (do not re-litigate)**
+- It believed **no Meta MCP exists** and could not see Chrome. Here the
+  `meta-ads` MCP is authorised and Chrome is driven directly. All campaign
+  work goes through this session's tooling.
+- Its plan to "warm the account" / "test on push traffic first" was
+  overtaken: the Meta account is live, has survived two identity checks and a
+  billing stall, and has ~$60 of real Feed data.
+- Its "all major social + Google" multi-platform adapter plan is unbuilt and
+  should stay parked. Facebook Feed only, by measurement (see "Placements").
+- Its `adstack-daily` thresholds were self-described placeholders; the real
+  ones now live in Supabase `config` (`target_cvr` 0.007, break-even CPC
+  $0.40) and in `ad_decisions`. The skill still reads hardcoded numbers —
+  fixing that is on the build list here.
+- The Sidekick (`css`) and courier branches it could not delete are still on
+  the remote. Ahmed said nothing there is in use.
+
+**What it is doing now that this session does not touch**
+- `keyword-research/` (commit `d651129`): Google + Amazon autocomplete
+  expansion, intent scoring, Playwright SERP difficulty, and a DataForSEO
+  adapter for volume/CPC (`--volume`). Test seed was "ergonomic pillow"
+  (516 keywords) — i.e. Derila groundwork for **search**, not Meta. It runs
+  from `keyword-research/` with `npx tsx src/cli.ts "<seed>" --top 20 --volume`
+  once `.env` holds the DataForSEO login. Ahmed completed the DataForSEO
+  onboarding survey 2026-09-03 (Keyword Research + SERP Tracking + Competitor
+  Analysis, REST API); credentials and the minimum deposit are his.
+- Google Ads API access (Chrome had `ads.google.com/aw/apicenter` and a Google
+  Cloud project `hibr-507504` open) — presumably for Keyword Planner volume.
+  Unfinished; status unknown to this session.
+- The other session cannot re-authorise `meta-ads` for this one; MCP auth is
+  per session.
+
+**Merge rule of thumb:** this file is the source of truth for anything live
+(campaign, tracker, crons, offers). "Affiliate Empire" holds the strategy
+history and the SEO/keyword tooling. When the merged session sees a
+conflict, the live number wins.
+
 ## Staged and PAUSED: PIA campaign + Purisaki creative refresh — 2026-09-03 ~04:20 UTC
 
 **PIA campaign (paused, ready for approval day):**
