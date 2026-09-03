@@ -1474,7 +1474,7 @@ brands):
 | A8 Evening Sugar Cravings | `120252122097380351` | `1437239308297677` | `/assets/default/ad-night.jpg` (night kitchen, hand, no face) | "evening sugar cravings after 45: why the capsule keeps failing" |
 | A9 Which Berberine | `120252122094060351` | `1442080307767958` | `/assets/default/ad-pills.jpg` | "which berberine? the one you don't swallow" |
 
-Turn on at Gate 1 if the current set needs help, or on Ahmed's word.
+**Activated 2026-09-03 ~05:25 UTC on Ahmed's word.** Twelve ads now share the $40 CBO: A1–A9, V1–V3. Four creative angles in play for Gate 1: routine/3pm (A1–A5, A7), format (A6, A9), evening sugar (A8), video (V1–V3).
 
 **Activated 2026-09-03 ~04:25 UTC on Ahmed's word** ("turn on A6 and A7").
 Ten ads now share the $40 CBO: A1–A5, V1–V3, A6, A7. Expect Meta to
