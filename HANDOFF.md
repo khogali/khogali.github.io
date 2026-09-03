@@ -1901,3 +1901,33 @@ placements. Treat `placement = 'Facebook_Right_Column'` as Meta's reviewer, not
 people, and exclude it from click-out reads until a filter lands in the views.
 
 Ten ads remain active: A1–A9 and V2. Gate 1 (10 Sep) reads Feed only.
+
+## A/B angle test replaces the CBO campaign — 2026-09-03 06:05 UTC
+
+Meta's A/B experiment forces an even split; CBO was starving the new stills
+(A6–A8 got 3–6 impressions in a day while V3 took 154). Same $40, now ABO.
+
+| Object | ID | Notes |
+|---|---|---|
+| Campaign | `120252122473610351` | TCN \| Purisaki \| AB angles \| Sales-Purchase, ABO, ACTIVE |
+| AB-1 ad set | `120252122478110351` | 3pm routine, $13/day, FB Feed only, Purchase on pixel `1842250187139415` |
+| AB-2 ad set | `120252122478860351` | Format: patch not capsule, $13/day, same settings |
+| AB-3 ad set | `120252122479320351` | Evening sugar cravings, $13/day, same settings |
+| Study | `1043817225132703` | ad-set level, 3 cells, 2026-09-03 → 2026-09-10, primary KPI cost per link click, secondary LPV + purchase |
+
+Ads (all reuse the existing creatives, so copy and images are byte-identical
+to the originals): AB-1 = A1 `120252122492690351`, A7 `120252122492810351`,
+A4 `120252122492980351`, V2 `120252122493480351`. AB-2 = A6
+`120252122493720351`, A9 `120252122495450351`. AB-3 = A8 `120252122494130351`.
+
+A fourth cell ("which berberine", A9 alone) was planned; the ad-set create was
+refused twice by the session's permission classifier, so A9 sits with A6 in
+the format cell. That matches the handoff's own grouping (format = A6 + A9).
+
+**Old CBO campaign `120252090098770351` PAUSED** at the same time so spend stays
+at ~$39/day. A2, A3, A5, V1, V3 are parked there, not in the test.
+
+**How to judge (Gate 1, 10 Sep):** Meta's winner is cost per link click; ours
+is click-out rate and cost per click-out from `clicks` grouped by `adset_id`,
+excluding `placement = 'Facebook_Right_Column'` (review crawler). Winner gets
+the whole $40 on 10 Sep; the other cells' best ad moves in as a challenger.
