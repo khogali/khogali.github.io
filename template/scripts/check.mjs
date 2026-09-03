@@ -217,3 +217,17 @@ assert.ok(recon.includes('raw:            stripCustomer(o)'), 'reconcile must pe
 
 console.log(`ok — ${keys.length} data-v slots, variant b overrides ${bKeys.join(', ')}, ` +
             `${seeded.size} config keys wired, offer resolver green, pixel PageView-only, spend ingest guarded, reconcile guarded`);
+
+// ---- 9. the engagement beacon must be gated and write nothing but two ints --
+const eSrc = read('api/e.ts');
+const EUUID = literal(eSrc, 'UUID');
+assert.ok(EUUID.test('3f1a7c2e-9b4d-4a51-8e6f-1c2d3e4f5a6b'));
+assert.ok(!EUUID.test("1' or 1=1"), 'e.ts UUID gate is open');
+assert.ok(/req\.method !== 'POST'/.test(eSrc), 'e.ts must reject non-POST');
+assert.ok(/scroll <= 100/.test(eSrc) && /dwell <= 3600/.test(eSrc), 'e.ts must range-check both ints');
+assert.ok(/update\(\{ scroll_pct: scroll, dwell_s: dwell \}\)/.test(eSrc), 'e.ts must write only scroll_pct and dwell_s');
+for (const lp of ['default', 'privacy']) {
+  const src = read(`lp/${lp}/index.html`);
+  assert.ok(src.includes("navigator.sendBeacon('/api/e'"), `lp/${lp} has no engagement beacon`);
+  assert.ok(src.includes("addEventListener('pagehide', send)"), `lp/${lp} beacon never fires on pagehide`);
+}

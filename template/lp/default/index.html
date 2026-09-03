@@ -176,5 +176,28 @@ window.VARIANTS = {
   }
 })();
 </script>
+<script>
+// Engagement beacon: furthest scroll and seconds on page, sent once on pagehide.
+// Same-origin, no cookies read beyond cid, nothing identifying.
+(function(){
+  var p = new URLSearchParams(location.search);
+  var cid = p.get('cid') || (document.cookie.match(/(?:^|;\s*)cid=([^;]+)/)||[])[1] || '';
+  if (!cid || !navigator.sendBeacon) return;
+  var t0 = Date.now(), max = 0, sent = false;
+  function scroll(){
+    var h = document.documentElement, d = Math.max(h.scrollHeight - h.clientHeight, 1);
+    var pct = Math.round(100 * (window.scrollY || h.scrollTop) / d);
+    if (pct > max) max = Math.min(pct, 100);
+  }
+  function send(){
+    if (sent) return; sent = true;
+    scroll();
+    navigator.sendBeacon('/api/e', JSON.stringify({ cid: cid, s: max, t: Math.min(Math.round((Date.now() - t0) / 1000), 3600) }));
+  }
+  addEventListener('scroll', scroll, { passive: true });
+  addEventListener('pagehide', send);
+  document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden') send(); });
+})();
+</script>
 </body>
 </html>

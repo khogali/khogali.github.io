@@ -443,3 +443,75 @@ from h;
 
 alter view adstack_status set (security_invoker = true);
 revoke all on adstack_status from anon, authenticated;
+
+-- ============================================================
+-- 2026-09-03: bot hygiene and the engagement beacon.
+-- Meta's ad-review crawler hits every ad (paused ones included) from the
+-- Right Column placement inside a two-minute window and sometimes fires the
+-- CTA. Right Column is in no ad set's placements, so it is never a person.
+-- Reporting views count only human clicks; the raw table keeps everything.
+-- ============================================================
+create or replace function is_human_click(placement text, fbclid text) returns boolean
+  language sql immutable as $$
+    select coalesce(placement, '') <> 'Facebook_Right_Column' and fbclid is not null
+  $$;
+
+-- api/e.ts: furthest scroll and seconds on page, sent once on pagehide.
+alter table clicks add column if not exists scroll_pct smallint check (scroll_pct between 0 and 100);
+alter table clicks add column if not exists dwell_s   integer  check (dwell_s >= 0);
+
+-- Same views as above with the human filter on the click side. Applied live
+-- as migrations exclude_review_crawler_clicks and
+-- restore_view_security_and_add_engagement_columns; kept here so schema.sql
+-- stays the source of truth. `create or replace view` drops reloptions, so
+-- security_invoker is re-set after each.
+create or replace view ad_performance as
+with clk as (
+  select ad_id, source, date(ts at time zone report_tz()) as day,
+         count(*) as tracked_clicks, max(offer) as offer
+  from clicks
+  where ad_id is not null and is_human_click(placement, fbclid)
+  group by ad_id, source, date(ts at time zone report_tz())
+), conv as (
+  select cl.ad_id, cl.source, date(cv.ts at time zone report_tz()) as day,
+         count(*) as conversions, sum(cv.payout) as revenue
+  from conversions cv join clicks cl on cl.click_id = cv.click_id
+  where cv.status <> 'reversed' and cl.ad_id is not null
+  group by cl.ad_id, cl.source, date(cv.ts at time zone report_tz())
+), spine as (
+  select day, source, ad_id from spend_daily
+  union select day, source, ad_id from clk
+  union select day, source, ad_id from conv
+)
+select sp.day, sp.source, t.offer, s.campaign_id, s.adset_id, sp.ad_id,
+  coalesce(s.spend, 0) as spend,
+  coalesce(s.impressions, 0) as impressions,
+  coalesce(s.clicks, 0) as platform_clicks,
+  coalesce(t.tracked_clicks, 0) as tracked_clicks,
+  coalesce(c.conversions, 0) as conversions,
+  coalesce(c.revenue, 0) as revenue,
+  coalesce(c.revenue, 0) - coalesce(s.spend, 0) as profit,
+  case when coalesce(s.spend, 0) > 0 then round(((coalesce(c.revenue, 0) - s.spend) / s.spend) * 100, 2) end as roi_pct,
+  case when coalesce(c.conversions, 0) > 0 then round(coalesce(s.spend, 0) / c.conversions, 2) end as cpa,
+  case when coalesce(t.tracked_clicks, 0) > 0 then round((coalesce(c.conversions, 0)::numeric / t.tracked_clicks) * 100, 2) end as cvr_pct
+from spine sp
+left join spend_daily s on s.day = sp.day and s.source = sp.source and s.ad_id = sp.ad_id
+left join clk t on t.day = sp.day and t.source = sp.source and t.ad_id = sp.ad_id
+left join conv c on c.day = sp.day and c.source = sp.source and c.ad_id = sp.ad_id;
+alter view ad_performance set (security_invoker = true);
+revoke all on ad_performance from anon, authenticated;
+
+create or replace view tracker_health as
+select
+  (select count(*) from clicks where ts > now() - interval '7 days' and is_human_click(placement, fbclid)) as clicks_7d,
+  (select count(*) from clicks where ts > now() - interval '7 days' and clicked_out and is_human_click(placement, fbclid)) as clickouts_7d,
+  (select round(100.0 * count(*) filter (where clicked_out) / nullif(count(*), 0), 1)
+     from clicks where ts > now() - interval '7 days' and is_human_click(placement, fbclid)) as clickout_pct,
+  (select count(*) from conversions where sub_id is not null and click_id is null) as unmatched_postbacks,
+  (select count(*) from conversions
+     where click_id is not null and not capi_sent and capi_response is not null
+       and not (capi_response ? 'skipped')) as capi_undelivered,
+  (select coalesce(sum(payout), 0) from conversions where status = 'pending') as revenue_pending,
+  (select coalesce(sum(payout), 0) from conversions where status = 'reversed') as revenue_reversed;
+alter view tracker_health set (security_invoker = true);
+revoke all on tracker_health from anon, authenticated;

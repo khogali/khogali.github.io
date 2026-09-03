@@ -1950,3 +1950,29 @@ not yet created at the time of writing. The About page names Ahmed as the
 author with a deliberately generic bio; he should edit it before launch.
 
 Not related to the Purisaki campaign; the A/B angle test above is unaffected.
+
+## Optimisation pass while the A/B test runs — 2026-09-03 21:00 UTC
+
+Ad sets untouched (edits would void study `1043817225132703`). Two things on
+our side instead:
+
+1. **Review-crawler clicks excluded from reporting.** `is_human_click(placement,
+   fbclid)` in Postgres; `ad_performance` and `tracker_health` (and so
+   `ad_decisions` and `adstack_status`) now count only human clicks. Raw
+   `clicks` rows are untouched. Honest 7-day click-out after the filter:
+   **174 clicks, 4 outs, 2.3%.** The landing page is the problem, not the ads.
+2. **Engagement beacon.** `api/e.ts` + a snippet at the bottom of
+   `lp/default` and `lp/privacy`: on pagehide, `navigator.sendBeacon` posts
+   `{cid, s: max scroll %, t: seconds}`; the handler UUID-gates, range-checks
+   and writes `clicks.scroll_pct` / `clicks.dwell_s`. No third-party script.
+   Read it with: `select lp_variant, count(*), avg(scroll_pct), avg(dwell_s),
+   count(*) filter (where clicked_out) from clicks where scroll_pct is not
+   null group by 1`. First useful read after ~50 landings.
+
+Variant read since Feed-only (tiny, directional only): a = 0/9 outs,
+b (reader-question headline) = 2/5. Do not act on it until the beacon says
+where arm a loses people.
+
+Delivery note: Meta review held the new ads until ~12:00 PDT 03 Sep; the 3pm
+cell (`120252122478110351`) had no delivery event by 13:30 PDT. If still zero
+by 04 Sep morning, duplicate one still into it or ask Meta.
