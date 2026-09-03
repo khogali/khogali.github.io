@@ -1884,3 +1884,20 @@ select * from adstack_status;
 
 Only drill into `ad_decisions` when it says an ad needs action, and only into
 `tracker_health` when `plumbing` is not `ok`.
+
+## V1 and V3 paused — 2026-09-03 05:45 UTC (first Feed-only day)
+
+Feed-only since 15:00 UTC 09-02. By 05:40 UTC 09-03: **$17.60 spent, 557
+impressions, 8 real landings, 1 click-out (A9, desktop feed)**, ~$2.20 per
+landing against a ~$0.40 break-even. Meta kept routing Feed budget to the Reels
+videos: V3 $6.33 / 154 imps / 0 clicks, V1 $1.75 / 96 imps / 0 clicks. Paused
+both (`120252100699740351`, `120252100127830351`) at Ahmed's word. V2 stays
+(4 real feed landings). A1 is the next suspect: 113 imps, 1 click, $3.34.
+
+**Review-crawler clicks:** at 04:07–04:09 and 05:14–05:16 UTC every ad, the
+paused PIA ads included, logged 4–5 `Facebook_Right_Column` clicks inside two
+minutes, some with `clicked_out`. Right Column is not in either ad set's
+placements. Treat `placement = 'Facebook_Right_Column'` as Meta's reviewer, not
+people, and exclude it from click-out reads until a filter lands in the views.
+
+Ten ads remain active: A1–A9 and V2. Gate 1 (10 Sep) reads Feed only.
