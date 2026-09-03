@@ -1931,3 +1931,22 @@ at ~$39/day. A2, A3, A5, V1, V3 are parked there, not in the test.
 is click-out rate and cost per click-out from `clicks` grouped by `adset_id`,
 excluding `placement = 'Facebook_Right_Column'` (review crawler). Winner gets
 the whole $40 on 10 Sep; the other cells' best ad moves in as a challenger.
+
+## Content site started — 2026-09-03 07:20 UTC
+
+Research in `docs/niche-research-2026-09-03.md` (artifact
+https://claude.ai/code/artifact/971afa74-970d-477a-a897-ab15dea936e3). Verdict:
+one site, not a portfolio; niche = operations software for solo trades.
+
+Site repo: **`khogali/onetruckops`** (private), local
+`~/Developer/Personal Repo/onetruckops`. Astro 7.2.10 pinned (7.3.0 breaks the
+Vercel adapter with a missing `astro/_internal/logger` export), MDX content
+collection, four fixed clusters, `draft: true` default that never builds, one
+`Affiliate.astro` component for all merchant links (rel=sponsored), publishing
+gate in that repo's `CLAUDE.md`, first 20 briefs in `briefs/first-20.md`.
+Domain recommended: **onetruckops.com** (available on .com/.co/.io at
+2026-09-03 07:05 UTC; Ahmed is claiming a free domain himself). Vercel project
+not yet created at the time of writing. The About page names Ahmed as the
+author with a deliberately generic bio; he should edit it before launch.
+
+Not related to the Purisaki campaign; the A/B angle test above is unaffected.
