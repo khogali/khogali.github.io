@@ -1367,6 +1367,16 @@ framing, no anonymity claims, honest handoff ("it is a sales page with a
 timer; ignore the timer"). Verified at 390px in Playwright Chromium: first CTA
 at 602px (inside the first screen), page 4,990px.
 
+**Media (Higgsfield, Recraft V4.1, ~4 credits each, 2026-09-03 03:43 UTC):**
+hero on the page is `assets/privacy/hero.jpg` (woman late 50s, café window,
+phone, coffee; cropped 16:9 via CSS with `height:auto` so the HTML height
+attribute does not override `aspect-ratio` — that bug pushed the first CTA to
+1,454px before the fix; with it the CTA sits at 819px). `hero-alt.jpg`
+(man, kitchen table, lamp) is the spare. Two feed stills for the PIA ads are
+staged on the domain for `ads_creative_upload_media`: `ad-cafe.jpg` (woman,
+café, generic Wi-Fi glyph on the window) and `ad-airport.jpg` (man, departure
+lounge). All frame-checked: no text, no logos, no product, no likeness.
+
 **Resolver extended so two offers share one domain.** `OFFERS` keys may now
 be a landing-page slug as well as a host; slug wins (`lib/offers.ts`).
 `/api/c` stamps the click's offer by slug, `/api/go` reads the click's
