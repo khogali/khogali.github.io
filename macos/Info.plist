@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key><string>Mudroom</string>
+  <key>CFBundleDisplayName</key><string>Mudroom</string>
+  <key>CFBundleIdentifier</key><string>com.khogali.mudroom</string>
+  <key>CFBundleVersion</key><string>1</string>
+  <key>CFBundleShortVersionString</key><string>0.1.0</string>
+  <key>CFBundleExecutable</key><string>Mudroom</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleIconFile</key><string>Mudroom</string>
+  <key>LSMinimumSystemVersion</key><string>13.0</string>
+  <key>LSUIElement</key><true/>
+  <key>NSHighResolutionCapable</key><true/>
+  <key>NSDownloadsFolderUsageDescription</key>
+  <string>Mudroom watches Downloads so new files can wait on the mat until you give them a name and a room.</string>
+  <key>NSDocumentsFolderUsageDescription</key>
+  <string>Mudroom moves files into the rooms you choose.</string>
+  <key>NSDesktopFolderUsageDescription</key>
+  <string>Mudroom moves files into the rooms you choose.</string>
+</dict>
+</plist>

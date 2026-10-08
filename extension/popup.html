@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mudroom</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="boots" aria-hidden="true"></span> Mudroom</div>
+  <button id="settingsBtn" class="ghost" type="button" title="Settings">⋯</button>
+</header>
+
+<section id="door" class="door hidden" aria-live="polite">
+  <h2>At the door</h2>
+  <div id="doorList"></div>
+</section>
+
+<section class="mat">
+  <h2>On the mat <span id="matCount" class="pill"></span></h2>
+  <div id="matList"></div>
+  <p id="matEmpty" class="empty">Mat's clean.</p>
+</section>
+
+<section id="bagged" class="bagged hidden">
+  <h2>Bagged for pickup</h2>
+  <div id="baggedList"></div>
+</section>
+
+<section id="settings" class="settings hidden">
+  <h2>Settings</h2>
+  <label>Door timeout <input id="doorTimeout" type="number" min="5" max="120" step="5"> s, then it goes to the mat</label>
+  <p class="fine" id="nativeStatus"></p>
+  <details>
+    <summary>Learned rules</summary>
+    <pre id="rulesDump"></pre>
+  </details>
+</section>
+
+<footer class="foot" id="foot"></footer>
+
+<template id="bootTpl">
+  <article class="boot">
+    <div class="row">
+      <span class="kind" data-kind></span>
+      <div class="meta">
+        <div class="name" data-name></div>
+        <div class="sub"><span data-domain></span><span data-age></span><span data-size></span><span class="flag" data-flag></span></div>
+      </div>
+      <span class="decay" data-decay></span>
+    </div>
+    <form class="shoes hidden" data-shoes>
+      <input class="rename" data-rename type="text" spellcheck="false" placeholder="name">
+      <div class="rooms" data-rooms></div>
+      <div class="actions">
+        <input class="newroom" data-newroom type="text" placeholder="new room (folder under Downloads)" spellcheck="false">
+        <button type="submit" class="primary" data-go>Shoes off</button>
+      </div>
+      <div class="tools">
+        <button type="button" class="ghost" data-peek>Peek</button>
+        <button type="button" class="ghost" data-show>Show in folder</button>
+        <button type="button" class="ghost danger" data-throw>Throw out</button>
+      </div>
+      <p class="fine" data-note></p>
+    </form>
+  </article>
+</template>
+
+<script src="shared/rules.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>
