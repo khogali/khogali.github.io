@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mudroom</title>
+<meta name="description" content="Nothing enters your filesystem with its shoes on. A mat for your downloads, for Mac, Chrome, and Safari.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="extension/icons/48.png">
+<style>
+  :root { --bg:#f4efe6; --ink:#2b211a; --muted:#7d6a5a; --mat:#a8733f; --mat-dark:#7a4f27; --card:#fffaf2; --line:#e2d5c3; --accent:#c2410c; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1b1612; --ink:#f1e8dc; --muted:#a8988a; --mat:#8a5a2b; --mat-dark:#5c3a1a; --card:#241d18; --line:#3a2e26; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 56px 16px 80px; }
+  h1 { font-size: 44px; line-height: 1.05; margin: 0 0 8px; letter-spacing: -.02em; }
+  .tag { font-size: 20px; color: var(--muted); margin: 0 0 32px; }
+  .mat { height: 18px; border-radius: 4px 4px 10px 10px; background: repeating-linear-gradient(90deg, var(--mat) 0 10px, var(--mat-dark) 10px 14px); margin: 0 0 40px; box-shadow: 0 6px 0 var(--mat-dark); }
+  h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 40px 0 12px; }
+  p { margin: 0 0 14px; }
+  .cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .card b { display: block; margin-bottom: 4px; }
+  .card small { color: var(--muted); }
+  ol { padding-left: 22px; } li { margin-bottom: 6px; }
+  code { background: var(--card); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; font-size: 90%; }
+  a { color: var(--accent); }
+  .boots { display: flex; gap: 10px; margin: 24px 0 0; flex-wrap: wrap; }
+  .boot { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 14px; display: flex; gap: 10px; align-items: center; }
+  .k { width: 26px; height: 26px; border-radius: 6px; color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; }
+  .decay { color: var(--muted); font-size: 12px; margin-left: 6px; }
+  footer { margin-top: 56px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Mudroom</h1>
+  <p class="tag">Nothing enters your filesystem with its shoes on.</p>
+  <div class="mat" role="presentation"></div>
+
+  <p>Every file that lands in Downloads stops at the door. You give it a real name and a room, or it waits on the mat where you can see it. Leave it long enough and it gets bagged for pickup. Nothing is deleted behind your back, ever.</p>
+
+  <div class="boots" aria-hidden="true">
+    <div class="boot"><span class="k" style="background:#4b6a9b">DOC</span>invoice.pdf <span class="decay">bank.com · 2m</span></div>
+    <div class="boot"><span class="k" style="background:#9f1239">EXE</span>installer.dmg <span class="decay">runs code · 1h</span></div>
+    <div class="boot"><span class="k" style="background:#6b8f3c">IMG</span>IMG_4821.heic <span class="decay">AirDrop · 9d · dusty</span></div>
+  </div>
+
+  <h2>Three doors, one mat</h2>
+  <div class="cards">
+    <div class="card"><b>Mac app</b>Catches everything that reaches Downloads: browsers, AirDrop, Slack, Mail. The mat lives on the right screen edge. Hover it, or press ⌃⌥M.<br><small>Swift, menubar, no network.</small></div>
+    <div class="card"><b>Chrome</b>Holds a download at the door before it's written. Pick a room, it lands there. After two sends from the same site, it routes itself.<br><small>Works alone, or hands finished files to the app.</small></div>
+    <div class="card"><b>Safari</b>Safari has no downloads API, so the extension is a window onto the app's mat from the toolbar.<br><small>Needs the app.</small></div>
+  </div>
+
+  <h2>House rules</h2>
+  <ol>
+    <li>A file is caught only once it has stopped growing. Partial downloads are never touched.</li>
+    <li>Rooms are learned from what you do, not configured. Rules are visible and editable.</li>
+    <li>Installers, scripts, and quarantined files are badged with their source domain before they go anywhere.</li>
+    <li>Seven days on the mat: dusty. Fourteen: bagged. Thirty: the real Trash, from a folder you can see.</li>
+  </ol>
+
+  <h2>Get it</h2>
+  <p>Source, build steps, and the Safari converter walkthrough are in the <a href="https://github.com/khogali/khogali.github.io">repository README</a>. Load <code>extension/</code> unpacked in Chrome to try the door today.</p>
+
+  <footer>A side project. Inspired by the idea that transient digital clutter deserves a physical place with its own sense of time.</footer>
+</main>
+</body>
+</html>
